@@ -1,0 +1,4 @@
+<%
+String callback= request.getParameter("callback");
+%>
+<%=callback %>({"counters":{},"jvm":{},"gauges":{"Bytes_received":1204.0,"Open_files":51.0,"Handler_commit":0.0,"Handler_savepoint":0.0,"Binlog_cache_disk_use":0.0,"Open_streams":0.0,"Handler_rollback":0.0,"Open_tables":276.0,"Opened_table_definitions":0.0,"Aborted_clients":527.0,"Opened_tables":0.0,"Bytes_sent":8667.0,"Threads_connected":11.0,"Aborted_connects":3009.0,"Binlog_cache_use":1149886.0,"Opened_files":6499.0,"Handler_savepoint_rollback":0.0,"Open_table_definitions":267.0,"Max_used_connections":263.0,"Connections":24310.0},"labels":{},"piegrams":{},"distributions":{}})

@@ -1,0 +1,28 @@
+#! /bin/bash
+
+log_path=/opt/var/log/keepalived
+log_file="$log_path/keepalived.log"
+bin_path=/opt/local/bin
+
+desthost=$1
+viphost=$2
+function usage() {
+    echo "$0 desthost virtual_ip"
+    exit 1
+}
+
+if [ -z $desthost ] || [ -z $viphost ]
+then
+    usage
+fi
+
+cat > $bin_path/graph-klnotifymaster << ---END---
+#! /bin/bash
+cli=/opt/local/redgraph/bin/redgraph-cli
+echo "\`date '+%F %H:%M:%S'\`: notify master start" >> $log_file
+\$cli -p 6120 slaveof no one >> $log_file 2>&1
+\$cli -h $desthost -p 6120 slaveof $viphost 6120 >> $log_file  2>&1
+echo "\`date '+%F %H:%M:%S'\`: notify master end" >> $log_file
+---END---
+chmod +x $bin_path/graph-klnotifymaster
+echo "initial is ok!"

@@ -1,0 +1,42 @@
+#! /bin/bash
+
+binpath=/opt/local
+dest_ip=$1
+
+function usage() {
+	echo "$0 dest_ip"
+	exit 1
+}
+
+function set_slave() {
+	st=`mysql -h $dest_ip --user=lj --password=livejournal << END
+show master status;
+END`||exit 1
+	master_log_file=`echo $st |awk '{print $5}'`
+	master_log_pos=`echo $st |awk '{print $6}'`
+
+	mysql --defaults-file=/opt/etc/mysql/db1.cnf --user=root << END
+stop slave;
+change master to master_host='$dest_ip',master_user='rsync',master_password='sync1',master_log_file='$master_log_file',master_log_pos=$master_log_pos;
+start slave;
+END
+}
+
+if [[ $# < 1 ]]
+then
+	usage
+	exit 1
+fi
+
+function install_plugin() {
+	mysql --defaults-file=/opt/etc/mysql/db1.cnf --user=root << END
+	INSTALL PLUGIN rpl_semi_sync_slave SONAME 'semisync_slave.so';
+	INSTALL PLUGIN rpl_semi_sync_master SONAME 'semisync_master.so';
+END
+}
+
+install_plugin
+set_slave
+
+echo "finish initial mysql slave!"
+echo "quit"

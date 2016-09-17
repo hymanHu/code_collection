@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- springMVC配置 -->
+<beans xmlns="http://www.springframework.org/schema/beans" 
+       xmlns:context="http://www.springframework.org/schema/context" 
+       xmlns:mvc="http://www.springframework.org/schema/mvc" 
+       xmlns:p="http://www.springframework.org/schema/p" 
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+       xmlns:beans="http://www.springframework.org/schema/beans" 
+       xsi:schemaLocation="http://www.springframework.org/schema/beans 
+		http://www.springframework.org/schema/beans/spring-beans-3.0.xsd 
+		http://www.springframework.org/schema/context 
+		http://www.springframework.org/schema/context/spring-context-3.0.xsd 
+		http://www.springframework.org/schema/mvc 
+		http://www.springframework.org/schema/mvc/spring-mvc-3.0.xsd">
+	<!-- 对指定包中所有类进行扫描，完成bean的创建和自动依赖注入功能 -->
+	<context:component-scan base-package="com.thornBird.think.notepad.controller" ></context:component-scan>
+	
+	<mvc:annotation-driven />
+	
+	<!-- 对模型视图名称进行解析，在模型视图名称上添加前后缀 -->
+	<bean class="org.springframework.web.servlet.view.InternalResourceViewResolver" 
+		p:prefix="/view/" p:suffix=".jsp"></bean>
+	
+	<!-- 重定义根请求，这个view一般是静态的 -->
+	<mvc:view-controller path="/" view-name="signIn"/>
+	
+	<!-- 加载资源文件 -->
+	<mvc:default-servlet-handler/>
+	
+	<!-- JSON -->
+	<bean class="org.springframework.http.converter.json.MappingJacksonHttpMessageConverter"></bean>
+	
+	<!-- validate -->
+	<bean id="validator" class="org.springframework.validation.beanvalidation.LocalValidatorFactoryBean"></bean>
+	
+	<!-- exception处理 -->
+	<beans:bean id="exceptionResolver" class="org.springframework.web.servlet.handler.SimpleMappingExceptionResolver"
+		p:defaultErrorView="view/error">
+		<beans:property name="exceptionMappings">
+			<beans:props>
+				<beans:prop key="java.lang.RuntimeException">view/error</beans:prop>
+			</beans:props>
+		</beans:property>
+	</beans:bean>
+	
+</beans>

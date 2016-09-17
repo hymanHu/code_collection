@@ -1,0 +1,29 @@
+@CHARSET "utf-8";
+/*login*/
+.loginBg{
+	background:url(../images/loginBg.jpg) 40px 30px no-repeat;	
+}
+.errorMsgDiv{
+	height:35px;
+	font-size:13px;
+	font-family:Arial, Helvetica, sans-serif;
+}
+.loginWrap{
+	padding-top:50px;
+	padding-left:580px;
+	width:210px;
+	height:200px;
+}	
+.loginWrap li{
+	height:25px;
+	line-height:25px;
+}	
+.loginTitle{
+	font-size:13px;
+	font-family:Arial, Helvetica, sans-serif;
+	font-weight:bold;
+	text-align:left;
+}
+.textBox1{
+	width:200px;
+}

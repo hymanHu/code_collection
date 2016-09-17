@@ -1,0 +1,125 @@
+1. maven仓库地址
+	中央仓库：http://search.maven.org/
+2. nexus安装
+	下载地址：http://nexus.sonatype.org/downloads/
+	安装方式：内嵌jetty的bundle方式 && war方式
+	安装使用：解压zip包后，到"bin\jsw\windows-x86-32"目录下执行"install-nexus.bat" && "start-nexus.bat"
+		访问http://127.0.0.1:8081/nexus页面，登陆admin/admin123。如果是war包，将之放到tomcat或jetty等web容器中即可。
+3. nexus基本介绍
+	仓库总类：
+		hosted：本地仓库，通常部署自己的构件，分为Releases，Snapshots，和3rd Party(第三方构件，如JDBC驱动)。
+		proxy：代理公共仓库。
+		group：仓库组，用来合并多个proxy&hosted，通常我们配置maven依赖仓库组。
+		virtual：
+	配置代理仓库(着重关注Browse，Configuration和Mirrors三个tab)：
+		Maven Central：http://repo1.maven.org/maven2/
+		Akka_IO：http://repo.akka.io/releases/
+		Apache Repository：https://repository.apache.org/content/groups/public/
+		Apache Snapshots：http://repository.apache.org/snapshots/
+		Codehaus Snapshots：http://nexus.codehaus.org/snapshots/
+		dayatang：http://www.dayatang.com:8080/nexus/content/repositories/releases/
+		Google Code：http://google-maven-repository.googlecode.com/svn/repository/
+		Ibibio Repository：http://mirrors.ibiblio.org/pub/mirrors/maven2/
+		java.net-m2：http://download.java.net/maven/2/
+		java.net-m1：http://download.java.net/maven/1/
+		Jboss：https://repository.jboss.org/nexus/content/repositories/releases/
+		msgpack：http://msgpack.org/maven2/
+		oss.sonatype.org：https://oss.sonatype.org/content/repositories/snapshots/
+		People Apache：http://people.apache.org/~rawson/repo/
+		Raykrueger：http://raykrueger.googlecode.com/svn/repository/
+		Scala-tools：http://scala-tools.org/repo-releases/
+		Sun Repository：http://download.java.net/maven/2/
+		Twttr：http://maven.twttr.com/
+	将代理仓库加入组
+		available repository 加入到ordered group repository
+	maven使用本地nexus
+		<!-- 
+			为了在settings.xml中插入<repositories>元素，编写<profile> 
+			<activeProfiles>自动激活<profile> 
+			<releases>和<snapshots>元素激活了Maven对于仓库所有类型构件下载的支持
+		-->
+		<profiles>
+		    <profile>
+		        <id>development</id>
+		        <repositories>
+		            <repository>
+		                <id>nexus</id>
+		                <url>http://172.17.20.100:8081/nexus/content/groups/public/</url>
+		                <releases>
+		                    <enabled>true</enabled>
+		                </releases>
+		                <snapshots>
+		                    <enabled>true</enabled>
+		                </snapshots>
+		             </repository>
+		         </repositories>
+		         
+		         <pluginRepositories>
+		             <pluginRepository>
+		                 <id>nexus</id>
+		                 <url>http://172.17.20.100:8081/nexus/content/groups/public/</url>
+		                 <releases>
+		                     <enabled>true</enabled>
+		                 </releases>
+		                 <snapshots>
+		                     <enabled>true</enabled>
+		                 </snapshots>
+		             </pluginRepository>
+		         </pluginRepositories>
+		    </profile>
+		</profiles>
+		<activeProfiles>
+		    <activeProfile>development</activeProfile>
+		</activeProfiles>
+		<!-- 
+		覆盖中央仓库的默认地址，使用镜像配置
+		-->
+		<mirrors>
+		    <mirror>
+		        <id>nexus</id>
+		        <mirrorOf>*</mirrorOf>
+		        <url>http://172.17.20.100:8081/nexus/content/groups/public/</url>
+		    </mirror>
+		</mirrors>
+	部署构件到nexus
+		a、通过nexusui部署，选择本地仓库仓库upload面板，输入构件信息，选择上传构件，upload即可。
+		b、通过maven自动部署
+			pom.xml
+			<distributionManagement>  
+				<repository>  
+					<id>nexus-releases</id>  
+			    	<name>Nexus Release Repository</name>  
+			      	<url>http://127.0.0.1:8080/nexus/content/repositories/releases/</url>  
+			  	</repository>  
+			  	<snapshotRepository>  
+			    	<id>nexus-snapshots</id>  
+			    	<name>Nexus Snapshot Repository</name>  
+			    	<url>http://127.0.0.1:8080/nexus/content/repositories/snapshots/</url>  
+			  	</snapshotRepository>  
+			</distributionManagement>
+			setting.xml
+			<servers>  
+			  	<server>  
+			    	<id>nexus-releases</id>  
+			    	<username>admin</username>  
+			    	<password>admin123</password>  
+			  	</server>  
+			  	<server>  
+			    	<id>nexus-snapshots</id>  
+			    	<username>admin</username>  
+			    	<password>admin123</password>  
+			  	</server>    
+			</servers>
+		c、通过jenkins部署
+			配置job时，选择"Deploy artifacts to Maven repository"，并输入"Repository URL"和"Repository ID"。
+	4、Exception
+		a、nexus无法启动，报错：wrapper | The nexus service was launched, but failed to start.
+			分析：查看日志：D:\nexus-2.8.0-05-bundle\nexus-2.8.0-05\logs\wrapper.log
+				wrapper | Launching a JVM...
+				jvm 5 | java.lang.UnsupportedClassVersionError: org/sonatype/nexus/bootstrap/jsw/JswLauncher : Unsupported 
+				...
+			解决：找不到Java虚拟机，或版本不一致，修改配置文件解决
+				D:\nexus-2.8.0-05-bundle\nexus-2.8.0-05\bin\jsw\conf\wrapper.conf
+				修改：wrapper.java.command=C:\Program Files\Java\jdk1.7.0_55\bin\java.exe
+		
+		

@@ -1,0 +1,29 @@
+@CHARSET "utf-8";
+/*regist*/
+.registBg{
+	background:url(../images/registBg.jpg) 20px 10px no-repeat;
+}
+.registBg2{
+	background:url(../images/registBg2.jpg) 365px 0px no-repeat;
+}
+table{
+	margin:55px 0 0 280px;
+}
+tr{
+	height:35px;
+}
+.registTitle{
+	font-size:14px;
+	font-family:Arial, Helvetica, sans-serif;
+	font-weight:bold;
+	text-align:left;
+	width: 90px;
+}
+.textBox1{
+	width:140px;
+	height:20px;
+}
+.registError{
+	width:220px;
+	text-align:left;
+}

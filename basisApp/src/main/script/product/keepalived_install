@@ -1,0 +1,114 @@
+#! /bin/bash
+
+ins_fn=$1
+type=$2
+vrid=$3
+priority=$4
+types=(mysql queue graph)
+devn=$5
+vhost=$6
+dst_host=$7
+vip=""
+binpath=/opt/local/keepalived
+
+function usage() {
+	echo "$0 filename (mysql|graph|queue) virtual_router_id(1-255) priority(1-254) device_name virtual_host dest_host"
+	exit 1
+}
+
+if [[ $# < 5 ]]
+then
+	usage
+	exit 1
+fi
+
+function check_file() {
+	if [ ! -f $1 ]
+	then
+		echo "$1 file is not exist!" 1>&2
+		exit 1
+	fi
+}
+
+function check_host() {
+	vip=$(/opt/local/bin/gethostip $vhost)
+	if [ "$vip" == "" ]
+	then
+		echo "can't resolv host $vhost" 1>&2
+		exit 1
+	fi
+}
+
+function check() {
+	check_file /opt/local/bin/keepalived_init
+	check_file /opt/local/bin/gethostip
+	[ "$type" == "queue" ] && check_file /opt/local/bin/queue_klnotify_init
+	[ "$type" == "graph" ] && check_file /opt/local/bin/graph_klnotify_init
+	if [[ ! "${types[*]}" =~ "$type" ]]
+	then
+		echo "please input correct type"  1>&2
+		exit 1
+	fi
+	check_host
+}
+
+
+function check_pkg() {
+	local pn=$(rpm -q  $1)
+	if [ "$pn" == "package $1 is not installed" ]
+	then
+		echo "please install $1" 1>&2
+		exit 1
+	fi
+}
+
+function env_prep() {
+	check_pkg kernel-devel-$(uname -r)
+	check_pkg popt-devel
+	check_pkg openssl-devel
+	check_pkg libnl-devel
+	check_pkg ipvsadm
+	local linux_src='/usr/src/linux'
+	if [ ! -h $linux_src ]
+	then
+		echo "please execute follow command: ln -s /usr/src/kernels/$(uname -r) $linux_src" 2>&1
+		exit 1
+	fi
+}
+
+function build() {
+	local srcfile=$1
+	local destpath=$2
+	local srcpath=$(dirname $srcfile)
+	local tmp_dir=$srcpath/keepalived-src-tmp
+	rm -rf $tmp_dir
+	mkdir -p $tmp_dir
+	tar xzvf $srcfile -C $tmp_dir || exit 1
+	cd $tmp_dir
+	mkdir -p $destpath
+	echo $tmp_dir
+	cd $tmp_dir/*/
+	./configure --prefix=$destpath
+	make && make install 
+}
+
+function graph_proc(){
+	graph_klnotify_init $dst_host $vhost
+}
+
+function queue_proc(){
+	queue_klnotify_init $dst_host $vhost
+}
+
+mysql_proc() {
+	echo "" /dev/null
+}
+
+env_prep
+check
+build $ins_fn $binpath
+echo "keepalived_init $type $vrid $priority $devn $vip"
+keepalived_init $type $vrid $priority $devn $vip
+${type}_proc
+echo "keepalived install finish!"
+echo "quit"

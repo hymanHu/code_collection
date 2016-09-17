@@ -1,0 +1,151 @@
+#! /usr/bin/env python
+
+import os, os.path
+import sys
+import stat
+import shutil
+from time import time
+
+from optparse import OptionParser
+
+# The directories, which the Redgraph will be used in run time.
+redgraph_directories = {
+    'etc'  : '/opt/etc/redgraph',
+    'data' : '/opt/data/redgraph',
+    'run'  : '/opt/var/run/redgraph',
+    'log'  : '/opt/var/log/redgraph'
+}
+
+def latest_file(dir):
+    
+    lf = None
+    mt = -1
+    for f in os.listdir(dir):
+        cf = os.path.join(dir, f)
+        t = os.stat(cf)[stat.ST_MTIME]
+        if t > mt:
+            mt = t
+            lf = cf
+    return lf
+        
+def build(srcfile, outdir):
+    dirpath, filename = os.path.split(srcfile)
+     
+    # extract source file into the same directory with tar.gz file.
+    print "Extract source file into %s." % dirpath
+     
+    ret = os.system( 'tar xvfz %s -C %s' % (srcfile, dirpath) )
+    if ret != 0:
+        # print "Extract source code from %s failure: %s" % (srcfile, sys.exc_info()[0])
+        raise RuntimeError("Extract source code from %s failure: %s" % (srcfile, sys.exc_info()[0]))
+    
+    build_dir = latest_file(dirpath)
+    print "Switch directory to %s." % build_dir
+    os.chdir(build_dir)
+     
+    if not os.path.isdir(outdir):
+        print "Outpath directory %s doesn't exist, create it." % outdir
+        os.makedirs(outdir)
+         
+    # build and install
+    print "Build and install Redgraph into %s." % outdir
+    ret = os.system( "make PREFIX=%s install" % outdir )
+    if ret != 0:
+        # print "Build failure: %s" % sys.exc_info()[0]
+        raise RuntimeError("Build failure: %s" % sys.exc_info()[0])
+
+def make_structure(dirs):
+    for d in dirs:
+        if not os.path.isdir(d):
+            print "Directory %s doesn't exist, create it." % d
+            os.makedirs(d)
+            
+def config(template_file, inst_num, max_mem, slaveof=None):
+    # tpl_file = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'redgraph.template')
+    if not os.path.isfile(template_file):
+        raise IOError("Redgraph config template not found.")
+    
+    fh = open(template_file, 'r')
+    tpl_str = fh.read()
+    fh.close()
+    
+    from string import Template
+    template = Template(tpl_str)
+    
+    start_port = 6120
+    for i in range(inst_num):
+        
+        context = {'save': '', 'slaveof':''}
+        port = start_port + i
+        
+        context['maxmemory'] = max_mem
+        context['pidfile'] = '%s-%s' % (redgraph_directories.get('run'), '%s.pid' % port)
+        context['port'] = str(port)
+        context['unixsocket'] = '%s-%s' % (redgraph_directories.get('run'), '%s.socket' % port)
+        
+        context['logfile'] = '%s-%s' % (redgraph_directories.get('log'), '%s.log' % port )
+        
+        context['datadir'] = redgraph_directories.get('data')
+        if slaveof:
+            s, p = slaveof.split(':')
+            context['slaveof'] = 'slaveof %s %s' %(s, p)
+            
+            if port == 6120:
+                context['save'] = 'save 600 100'
+        
+        result = template.safe_substitute(context)
+
+        conf_dir = redgraph_directories.get('etc')
+        if not os.path.isdir(conf_dir):
+            os.makedirs(conf_dir)
+        conf_file = os.path.join(conf_dir, 'redgraph-%s.cnf' % port)
+        
+        # config file exists, make a copy.
+        if os.path.isfile(conf_file):
+            shutil.copyfile( conf_file, '%s-%s' % (conf_file, time()) )
+        
+        fh = open(conf_file, 'w')
+        fh.writelines(result)
+        fh.close()
+
+USAGE = '''
+    graph_install [options] source_code_file instance_number memory_size [slaveof]
+
+Description:
+    Tool to install Redgraph.       
+
+Arguments:
+    source_file            - the path of source code file.
+    instance_number        - how many instance will be created.
+    memory_size            - memory size for each instance.
+    slaveof                - the ip address and port of the master server, it's optional.
+
+Example: 
+    graphinstall /opt/downloads/redgraph-xxx-SNAPSHOT.tar.gz 3 10 vip-raid1:6121
+'''
+
+def main():
+    parser = OptionParser(version="1.6.2-SNAPSHOT")
+    
+    parser.usage = USAGE
+    (options, args) = parser.parse_args()
+    
+    if len(args) < 3:
+        parser.print_help()
+        exit(1)
+    
+    config_dir = os.path.abspath(os.path.dirname(__file__))
+    template_file = os.path.join(config_dir, 'redgraph.template')
+    
+    make_structure(redgraph_directories.values())
+    build(args[0], '/opt/local/redgraph')
+    
+    print "Generate configuration file for Redgraph instances."
+    if len(args) > 3:
+        config(template_file, int(args[1]), int(args[2]))
+    else:
+        config(template_file, int(args[1]), int(args[2]), args[3])
+
+if __name__ == '__main__':
+    main()
+

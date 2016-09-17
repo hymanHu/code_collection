@@ -1,0 +1,114 @@
+#! /usr/bin/env python
+
+import sys,os
+import getopt
+import commands
+import tempfile
+import json
+from optparse import OptionParser
+
+zkcli='/opt/local/zookeeper/bin/zkCli.sh'
+#zkcli='/home/zhao1/share/zookeeper-3.4.3/bin/zkCli.sh'
+
+verberse = False
+
+def build_option_parser():
+    usage = "usage: %prog [options] datafile"
+    parser = OptionParser(usage=usage)
+    parser.add_option("-s", "--server", dest="server",
+                  help="zookeeper servers address")
+    parser.add_option("-p", "--port", dest="port",
+                  help="zookeeper server port"),
+    # parser.add_option("-f", "--file", dest="filename",
+    #               help="zknode will be read from FILE", metavar="FILE")
+    parser.add_option("-q", "--quiet",
+                  action="store_false", dest="verbose", default=True,
+                  help="don't print status messages to stdout")
+    
+    return parser
+                  
+def _load_data(filepath):
+    try:
+        fh = open(filepath, 'r')
+    except IOError, e:
+        print "Can not open json data file: %s" % filepath
+        print e
+        sys.exit(1)
+    
+    try:
+        data = json.load(fh)
+    except Exception, e:
+        print "Can not parse json file: %s" % filepath
+        print e
+        sys.exit(2)
+    finally:
+        fh.close()
+        
+    return data
+             
+def check_env():
+        if not os.access(zkcli, os.F_OK):
+            print "zkcli not found %s" % zkcli
+            sys.exit(2)
+            
+        if not os.access(zkcli, os.X_OK):
+            print "zkcli is not executable file %s" % zkcli
+            sys.exit(2)
+
+def write_cmd_file(fh, data):
+    
+    for child in data.get('children', []):
+        key = child.get('identifier', '')
+        value = child.get('nodeValue', '')
+        
+        if not value:
+            value = key.split('/')[-1]
+        
+        print >> fh, "%s %s %s" % ('create', key, value)
+        write_cmd_file(fh, child)
+                    
+def import_data(datafile, host='localhost', port=2181):
+    data = _load_data(datafile)
+    
+    num, path = tempfile.mkstemp()
+    fh = open(path, 'w')
+    try:
+        print >> fh, "%s -server %s:%d << END" % (zkcli, host, port)
+    
+        write_cmd_file(fh, data)
+    
+        print >> fh, "END"
+    finally:
+        fh.close()
+
+    status, output = commands.getstatusoutput('/bin/sh ' + path)
+    if verbose:
+        print output
+        
+    os.remove(path)        
+    
+if __name__ == '__main__':
+    
+    parser = build_option_parser()
+    opts, args = parser.parse_args()
+    
+    verbose = opts.verbose
+    if len(args) < 1:
+        parser.error("incorrect number of arguments")
+    
+    server = 'localhost'
+    port = 2181
+    
+    datafile = args[0]
+    if opts.server:
+        server = opts.server
+    if opts.port:
+        try:
+            port = int(opts.port)
+        except ValueError, e:
+            parser.error("port should be a integer number")
+    
+    check_env()
+    import_data(datafile, server, port)
+    # print "OK"
+    

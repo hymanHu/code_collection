@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans:beans xmlns="http://www.springframework.org/schema/security" 
+	xmlns:beans="http://www.springframework.org/schema/beans" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+		http://www.springframework.org/schema/beans/spring-beans-3.0.xsd 
+		http://www.springframework.org/schema/security 
+		http://www.springframework.org/schema/security/spring-security-3.0.xsd">
+	<http auto-config="true" access-denied-page="/403.jsp" >
+		<!-- 拦截器 -->
+		<intercept-url pattern="/**" access="ROLE_ADMIN" />
+		<intercept-url pattern="/login.jsp" filters="none"/>
+		<intercept-url pattern="/loginTemp.jsp" filters="none"/>
+		<intercept-url pattern="/redirectAddUser.do" filters="none"/>
+		<intercept-url pattern="/redirectRegist.do" filters="none"/>
+		<intercept-url pattern="/loginError.do" filters="none"/>
+		<intercept-url pattern="/sessionTimeout.do" filters="none"/>
+		<intercept-url pattern="/visualCode.do" filters="none"/>
+		<intercept-url pattern="/addAccount.do" filters="none"/>
+		<intercept-url pattern="/styles/**" filters="none"/>
+		<intercept-url pattern="/scripts/**" filters="none"/>
+		<intercept-url pattern="/images/**" filters="none"/>
+		<!-- 用户登陆 -->
+		<form-login login-page="/login.jsp" 
+			always-use-default-target="true" 
+			default-target-url="/securityLogin.do" 
+			authentication-failure-url="/loginError.do" />
+		<!-- 用户注销 -->
+		<logout logout-success-url="/login.jsp" invalidate-session="true" />
+		<!-- session管理 -->
+		<session-management invalid-session-url="/sessionTimeout.do" 
+			session-fixation-protection="migrateSession">
+			<concurrency-control max-sessions="1" error-if-maximum-exceeded="true"/>
+		</session-management>
+		<!-- 在过滤器链中加入自定义过滤器 -->
+		<custom-filter ref="filterSecurityInterceptor" before="FILTER_SECURITY_INTERCEPTOR"/>
+		<http-basic/>
+	</http>
+	<!--  
+		在自定义的过滤器中需要三个部分：
+			AuthenticationManager认证管理器，实现用户认证入口
+			AccessDecisionManager：访问控制策略管理器，决策某个用户拥有的角色
+			securityMetadataSource：资源源数据定义，定义某一资源能被什么角色访问
+				FilterSecurityInterceptor.setSecurityMetadataSource()需要一个FilterSecurityMetadataSource实例，
+				它是SecurityMetadataSource的子类
+	-->
+	<beans:bean id="filterSecurityInterceptor" class="org.springframework.security.web.access.intercept.FilterSecurityInterceptor">
+		<beans:property name="authenticationManager" ref="authenticationManager" />
+		<beans:property name="accessDecisionManager" ref="accessDecisionManager" />
+		<beans:property name="securityMetadataSource" ref="mySecurityMetadataSource" />
+	</beans:bean>
+	<!-- 认证管理器,别名注入,myUserDetailService通过注解的方式在程序中注入 -->
+	<authentication-manager alias="authenticationManager">
+		<authentication-provider user-service-ref="myUserDetailService">
+			<password-encoder ref="md5Encoder">
+				<salt-source user-property="username"/>
+			</password-encoder>
+		</authentication-provider>
+	</authentication-manager>
+	<!-- 注入自定义加密器 -->
+	<beans:bean id="md5Encoder" class="com.cpkf.notpad.security.impl.MD5EncoderImpl"/>
+	<!-- 
+		访问控制策略管理器 
+		allowIfAllAbstainDecisions:通过投票机制决定是否访问某资源，false-一个以上的decisionVoters通过，则授权通过
+	-->
+	<beans:bean id="accessDecisionManager" class="org.springframework.security.access.vote.AffirmativeBased">
+		<beans:property name="allowIfAllAbstainDecisions" value="false" />
+		<beans:property name="decisionVoters">
+			<beans:list>
+				<beans:bean class="org.springframework.security.access.vote.RoleVoter">
+					<beans:property name="rolePrefix" value="ROLE_" />
+				</beans:bean>
+				<beans:bean class="org.springframework.security.access.vote.AuthenticatedVoter" />
+			</beans:list>
+		</beans:property>
+	</beans:bean>
+	<!-- 注入资源源数据定义 -->
+	<beans:bean id="mySecurityMetadataSource" class="com.cpkf.notpad.security.impl.MySecurityMetadataSource" init-method="loadResourceDefine" />
+</beans:beans>

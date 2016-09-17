@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><templates><template autoinsert="false" context="overridecomment_context" deleted="false" description="Comment for overriding methods" enabled="true" id="org.eclipse.jdt.ui.text.codetemplates.overridecomment" name="overridecomment">/* 
+ * method name   : ${enclosing_method}
+ * description   : 
+ * @author       : Jiang.Hu
+ * modified      : ${user} ,  ${date}
+ * @see          : ${see_to_overridden}
+ */    </template><template autoinsert="false" context="filecomment_context" deleted="false" description="Comment for created Java files" enabled="true" id="org.eclipse.jdt.ui.text.codetemplates.filecomment" name="filecomment">/**  
+ * Filename:    ${file_name}  
+ * Description: 
+ * Company:     
+ * @author:     Jiang.Hu
+ * @version:    1.0  
+ * Create at:   ${date} ${time}  
+ * Modify at:   ${date}
+ * Date         Author      Version     Description  
+ * ------------------------------------------------------------------  
+ * ${date}      alex         1.0        1.0 Version  
+ */  </template><template autoinsert="true" context="fieldcomment_context" deleted="false" description="Comment for fields" enabled="true" id="org.eclipse.jdt.ui.text.codetemplates.fieldcomment" name="fieldcomment">/**
+ * 
+ */</template><template autoinsert="true" context="delegatecomment_context" deleted="false" description="Comment for delegate methods" enabled="true" id="org.eclipse.jdt.ui.text.codetemplates.delegatecomment" name="delegatecomment">/**
+ * ${tags}
+ * ${see_to_target}
+ */</template><template autoinsert="false" context="methodcomment_context" deleted="false" description="Comment for non-overriding methods" enabled="true" id="org.eclipse.jdt.ui.text.codetemplates.methodcomment" name="methodcomment">/* 
+ * method name   : ${enclosing_method}
+ * description   : 
+ * @author       : Jiang.Hu
+ * @param        : ${tags}
+ * @return       : ${return_type}
+ * Create at     : ${date} ${time}
+ * modified      : 
+ */      
+</template><template autoinsert="false" context="typecomment_context" deleted="false" description="Comment for created types" enabled="true" id="org.eclipse.jdt.ui.text.codetemplates.typecomment" name="typecomment">/**  
+ * Filename:    ${file_name}
+ * Description: 
+ * Company:     
+ * @author:     Jiang.hu
+ * @version:    1.0
+ * Create at:   ${date} ${time}
+ * modified:    
+ */
+</template><template autoinsert="true" context="constructorcomment_context" deleted="false" description="Comment for created constructors" enabled="true" id="org.eclipse.jdt.ui.text.codetemplates.constructorcomment" name="constructorcomment">/**
+ * ${tags}
+ */</template><template autoinsert="false" context="settercomment_context" deleted="false" description="Comment for setter method" enabled="true" id="org.eclipse.jdt.ui.text.codetemplates.settercomment" name="settercomment">
+/* ********************************************
+ * method name   : ${enclosing_method} 
+ * description   : 
+ * @return       : the ${bare_field_name}
+ * @param        : ${param} the ${bare_field_name} to set
+ * modified      : ${user} ,  ${date}
+ * ********************************************/  </template><template autoinsert="false" context="gettercomment_context" deleted="false" description="Comment for getter method" enabled="true" id="org.eclipse.jdt.ui.text.codetemplates.gettercomment" name="gettercomment">
+/* *******************************************
+ * method name   : ${enclosing_method} 
+ * description   : 
+ * @return       : the ${bare_field_name}
+ * @param        : ${field_type}:${field}
+ * modified      : ${user} ,  ${date}
+ * ********************************************/  </template></templates>

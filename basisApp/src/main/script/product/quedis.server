@@ -1,0 +1,74 @@
+#!/bin/bash
+
+
+quedis="/opt/local/quedis/bin/quedis-server"
+quediscli="/opt/local/quedis/bin/quedis-cli"
+type="queue"
+usage() {
+  echo $"Usage: $0 {start|stop|info} "
+  exit
+}
+
+if [ "`whoami`" != "lj" ]
+then
+  echo "please use lj account"
+  exit 0
+fi
+
+
+
+start() {
+  local type="queue"
+  for f in `ls /opt/etc/$type/*.cnf`;
+  do
+    `$quedis $f`
+     echo "Started from $f"
+  done;
+  echo "server start"
+}
+
+stop() {
+  local type="queue"
+  for f in `ls /opt/var/run/$type/*.socket`;
+  do
+    echo -en 'shutdown'|$quediscli -s $f
+    echo "Stoped from $f"
+  done
+  echo "server stop"
+}
+
+restart() {
+echo "restarting..."
+stop type
+start type
+
+}
+
+info() {
+  local type="queue"
+  for f in `ls /opt/var/run/$type/*.socket`;
+  do
+    echo -en 'info'|$quediscli -s $f
+    echo "-----------------------------------------"
+  done
+}
+
+
+
+case "$1" in
+    start)
+        $1 $2
+        ;;
+    stop)
+        $1 $2
+        ;;
+    info)
+        $1 $2
+        ;;
+    restart)
+        $1 $2
+        ;;
+    *)
+        usage
+        ;;
+esac

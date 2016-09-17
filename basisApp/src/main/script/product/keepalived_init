@@ -1,0 +1,189 @@
+#! /bin/bash
+
+arg1=$1
+v_r_id=$2
+priority=$3
+devname=$4
+v_ip=$5
+cnf_path=/opt/etc/keepalived
+bin_path=/opt/local/bin
+log_path=/opt/var/log/keepalived
+log_file="$log_path/keepalived.log"
+#cnf_path=.
+
+if [ "$(whoami)" != "lj" ]
+then
+    echo "please use lj account."
+    exit 1
+fi
+
+function usage() {
+    echo "$0 (mysql|graph|queue) virtual_router_id(1-255) priority(1-254) device_name virtual_ipaddr"
+    exit 1
+}
+
+if [ "$arg1" != "mysql" ] && [ "$arg1" != "graph" ] && [ "$arg1" != "queue" ]
+then
+    usage
+fi
+
+if [ "$arg1" == "mysql" ]
+then
+    check_port=3306
+    router_id="mysql-ha"
+fi
+
+if [ "$arg1" == "graph" ]
+then
+    check_port=6120
+    router_id="graph-ha"
+fi
+
+if [ "$arg1" == "queue" ]
+then
+    check_port=5210
+    router_id="queue-ha"
+fi
+
+if  [[ ! "$v_r_id" =~ ^[0-9]+$ ]] || [ "$v_r_id" -lt "1" ] || [ "$v_r_id" -gt "255" ]
+then
+    usage
+fi
+
+if  [[ ! "$priority" =~ ^[0-9]+$ ]] || [ "$priority" -lt "1" ] || [ "$priority" -gt "254" ]
+then
+    usage
+fi
+
+if  [ -z $devname ]
+then
+    usage
+fi
+
+/sbin/ip addr show dev $devname>/dev/null || usage
+
+if [ -z $v_ip ] || [[ ! "$v_ip" =~ ^[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}$ ]]
+then
+    usage
+fi
+
+check_user() {
+   username=`stat -c %U $1`
+   if [ "$username" != "$2" ]
+   then
+       echo "make sure $1 owner is $2"
+       exit 0
+   fi
+}
+
+check_dir() {
+    if [ ! -d $1 ]
+    then
+      echo "make sure the directory $1 is exist." && exit 0
+    fi
+    check_user "$1" "lj"
+}
+
+mkdir -p $cnf_path
+check_dir $cnf_path
+
+mkdir -p $bin_path
+check_dir $bin_path
+
+mkdir -p $log_path
+check_dir $log_path
+
+password="$arg1-$v_r_id"
+
+prefix=$arg1
+
+##################################################
+if [[ "$arg1" == "graph" ]]; then
+    graph_backup_evt="[ -x /opt/local/bin/graph_backup_evt ] && /opt/local/bin/graph_backup_evt"    
+fi
+
+cat >$bin_path/$prefix-klnotifybackup << ---END---
+#! /bin/bash
+echo "\`date '+%F %H:%M:%S'\`: notify backup" >> $log_file
+$graph_backup_evt
+---END---
+chmod +x $bin_path/$prefix-klnotifybackup
+
+##################################################
+
+cat >$bin_path/$prefix-klnotifymaster << ---END---
+#! /bin/bash
+echo "\`date '+%F %H:%M:%S'\`: notify master" >> $log_file
+---END---
+chmod +x $bin_path/$prefix-klnotifymaster
+
+##################################################
+
+cat >$bin_path/$prefix-klnotifyfault << ---END---
+#! /bin/bash
+echo "\`date '+%F %H:%M:%S'\`: notify fault" >> $log_file
+---END---
+chmod +x $bin_path/$prefix-klnotifyfault
+
+##################################################
+
+cat >$bin_path/$prefix-klnotifydown << ---END---
+#! /bin/bash
+echo "\`date '+%F %H:%M:%S'\`: notify down" >> $log_file
+pkill keepalived
+sleep 1
+echo "delete the virtual ip from $devname"
+/sbin/ip addr delete $v_ip dev $devname 2>&1 >> $log_file
+---END---
+chmod +x $bin_path/$prefix-klnotifydown
+
+##################################################
+
+
+cat >$cnf_path/keepalived.cnf << ---END---
+#CNF vip=$v_ip devname=$devname
+global_defs {
+   router_id $router_id
+}
+
+vrrp_instance VI_1 {
+    state BACKUP
+    interface $devname
+    virtual_router_id $v_r_id # router id, can get it from 'tcpdump vrrp'
+    priority $priority
+    nopreempt
+    advert_int 1
+    garp_master_delay 1 # switch between master and backup.
+    authentication {
+        auth_type PASS
+        auth_pass $password
+    }
+    track_interface {
+        $devname
+    }
+    virtual_ipaddress {
+        $v_ip
+    }
+    #stats notification
+    notify_master "$bin_path/$prefix-klnotifymaster"
+    notify_backup "$bin_path/$prefix-klnotifybackup"
+    notify_fault "$bin_path/$prefix-klnotifyfault"
+}
+
+virtual_server $v_ip $check_port {
+    delay_loop 2
+    lb_algo wrr
+    lb_kind DR
+    persistence_timeout 60
+    protocol TCP
+    real_server 127.0.0.1 $check_port {
+        weight 3
+        notify_down "$bin_path/$prefix-klnotifydown"
+        TCP_CHECK {
+            connect_timeout 3
+        }
+    }
+}
+---END---
+##################################################
+echo "keepalived init finished"

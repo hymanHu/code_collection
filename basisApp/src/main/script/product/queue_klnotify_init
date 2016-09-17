@@ -1,0 +1,30 @@
+#! /bin/bash
+
+log_path=/opt/var/log/keepalived
+log_file="$log_path/keepalived.log"
+bin_path=/opt/local/bin
+
+desthost=$1
+viphost=$2
+function usage() {
+    echo "$0 desthost virtual_ip"
+    exit 1
+}
+
+if [ -z $desthost ] || [ -z $viphost ]
+then
+    usage
+fi
+
+cat > $bin_path/queue-klnotifymaster << ---END---
+#! /bin/bash
+cli=/opt/local/quedis/bin/quedis-cli
+echo "\`date '+%F %H:%M:%S'\`: notify master start" >> $log_file
+\$cli -p 5210 slaveof no one >> $log_file 2>&1
+\$cli -p 5211 slaveof no one >> $log_file 2>&1
+\$cli -h $desthost -p 5210 slaveof $viphost 5210 >> $log_file  2>&1
+\$cli -h $desthost -p 5211 slaveof $viphost 5211 >> $log_file  2>&1
+echo "\`date '+%F %H:%M:%S'\`: notify master end" >> $log_file
+---END---
+chmod +x $bin_path/queue-klnotifymaster
+echo "initial is ok!"

@@ -1,0 +1,54 @@
+#!/bin/bash
+
+redgraph="/opt/local/redgraph/bin/redgraph-server"
+redgraphcli="/opt/local/redgraph/bin/redgraph-cli"
+
+usage() {
+  echo $"Usage: $0 {start|stop|info}"
+  exit
+}
+
+if [ "`whoami`" != "lj" ]
+then
+  echo "please use lj account"
+  exit 0
+fi
+
+start() {
+  for f in `ls /opt/etc/redgraph/*.cnf`;
+  do
+    `$redgraph $f`
+  done;
+  echo "server start"
+}
+
+stop() {
+  for f in `ls /opt/var/run/redgraph/*.socket`;
+  do
+    echo -en 'shutdown'|$redgraphcli -s $f
+  done
+  echo "server stop"
+}
+
+info() {
+  for f in `ls /opt/var/run/redgraph/*.socket`;
+  do
+    echo -en 'info'|$redgraphcli -s $f
+    echo "------------------------------------------------------"
+  done
+}
+
+case "$1" in
+    start)
+        $1
+        ;;
+    stop)
+        $1
+        ;;
+    info)
+        $1
+        ;;
+    *)
+        usage
+        ;;
+esac

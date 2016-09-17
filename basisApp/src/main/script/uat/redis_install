@@ -1,0 +1,144 @@
+#! /usr/bin/env python
+
+import os, os.path
+import sys
+import stat
+import shutil
+from time import time
+
+from optparse import OptionParser
+
+from utils import build_redis
+
+QUEUE = {
+   'port':5210,
+   'config_dir': '/opt/etc/queue',
+   'data_dir' : '/opt/data/queue',
+   'run_dir' : '/opt/var/run/queue',
+   'log_dir' : '/opt/var/log/queue'
+}
+CACHE = {
+    'port':6379,
+    'config_dir' : '/opt/etc/attr',
+    'data_dir' : '/opt/data/attr',
+    'run_dir' : '/opt/var/run/attr',
+    'log_dir' : '/opt/var/log/attr' 
+}
+
+def config(template_file, action, inst_num, max_mem, slaveof=None):
+
+    if not os.path.isfile(template_file):
+        raise IOError("Redis config template not found.")
+    
+    fh = open(template_file, 'r')
+    tpl_str = fh.read()
+    fh.close()
+    
+    from string import Template
+    template = Template(tpl_str)
+    
+    if action == 'queue':
+        config = QUEUE
+    else:
+        config = CACHE
+        
+    port = config.get('port')
+    for i in range(inst_num):
+        
+        context = {'save': '', 'lru': '', 'slaveof':''}
+        if action == 'queue':
+            context['save'] = 'save 600 500'
+        else:
+            context['lru']="maxmemory-policy allkeys-lru"
+        
+        if slaveof:
+            s, p = slaveof.split(':')
+            context['slaveof'] = 'slaveof %s %s' %(s, p)
+        
+        context['maxmemory'] = max_mem
+        context['pidfile'] = '%s-%s' % (config.get('run_dir'), '%s.pid' % port)
+        context['port'] = str(port + i)
+        context['unixsocket'] = '%s-%s' % (config.get('run_dir'), '%s.socket' % port)
+        
+        context['logfile'] = '%s-%s' % (config.get('log_dir'), '%s.log' % port )
+        context['datadir'] = config.get('data_dir')
+
+        context['dbfilename'] = "dbfilename %s-%s.rdb" % (action, port+i)
+        
+        result = template.safe_substitute(context)
+        
+        conf_dir = config.get('config_dir')
+        if not os.path.isdir(conf_dir):
+            os.makedirs(conf_dir)
+        conf_file = os.path.join(conf_dir, '%s-%s.cnf' % (action, port+i))
+        
+        # config file exists, make a copy.
+        if os.path.isfile(conf_file):
+            shutil.copyfile( conf_file, '%s-%s' % (conf_file, time()) )
+        
+        fh = open(conf_file, 'w')
+        fh.writelines(result)
+        fh.close()
+
+USAGE = '''
+    redis_install [options] install_type source_code_file instance_number memory_size [slaveof]
+
+Description:
+    Tool to install redis for queue or attribute cache.       
+
+Arguments:
+    install_type           - the install type, eithor 'queue' or 'attr'
+    source_file            - the path of source code file.
+    instance_number        - how many instance will be created.
+    memory_size            - memory size for each instance.
+    slaveof                - the ip address and port of the master server, it's optional.
+
+Example: 
+    redis_install queue /opt/downloads/redis-xxx.tar.gz 3 10 vip-raid1:5210
+'''
+    
+def main():
+    parser = OptionParser(version="1.6.2-SNAPSHOT")
+    
+    parser.usage = USAGE
+    (options, args) = parser.parse_args()
+    
+    if len(args) < 4:
+        parser.print_help()
+        exit(1)
+    
+    template_dir = os.path.abspath(os.path.dirname(__file__))
+    template_file = os.path.join(template_dir, 'redis.template')
+    
+    action = args[0]
+    srcfile = args[1]
+    
+    instance_num = args[2]
+    max_mem = args[3]
+    
+    slaveof = None
+    if len(args) > 4:
+        slaveof = args[4]
+    
+    output_dir = "/opt/local/redis"
+    redis_bin = os.path.join(output_dir, 'bin/redis-server') 
+    # skip build
+    if not os.path.isfile(redis_bin):
+        build_redis(srcfile, output_dir)
+    
+    # make directories structure.
+    if action == 'queue':
+        config = QUEUE
+    else:
+        config = CACHE
+    
+    for d in dir(config):
+        if d.endswith('dir') and not os.path.isdir(d):
+            print "Directory %s doesn't exist, create it." % d
+            os.makedirs(d)
+       
+    config(template_file, action, instance_num, max_mem, slaveof)
+    
+if __name__ == '__main__':
+    main()
+    

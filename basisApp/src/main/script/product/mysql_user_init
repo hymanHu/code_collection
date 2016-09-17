@@ -1,0 +1,37 @@
+#! /bin/bash
+
+function check_mysql() {
+	timeout=1
+	for (( i=0; i<60; i++ ))
+	do
+		if [ "$(netstat -an|grep 0.0.0.0:3306)" != "" ]
+		then
+			timeout=0
+			break
+		fi
+		echo "starting mysql"
+		sleep 1
+	done
+	if [ $timeout == 1 ]
+	then
+		echo "start mysql timeout"
+		exit 1
+	fi
+}
+
+function add_user() {
+	server=`hostname`
+	mysql --defaults-file=/opt/etc/mysql/db1.cnf --user=root << END
+    use mysql;
+    delete from user where Host= '$server';
+    delete from user where User='';
+    GRANT ALL PRIVILEGES ON *.* TO 'lj'@'%' IDENTIFIED BY 'livejournal' WITH GRANT OPTION;
+    GRANT REPLICATION SLAVE ON *.* TO 'rsync'@'%' IDENTIFIED BY 'sync1';
+    flush privileges;
+END
+
+}
+
+check_mysql
+add_user
+

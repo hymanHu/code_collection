@@ -1,0 +1,70 @@
+#! /bin/bash
+
+filename=$1
+ins_num=$2
+binpath=/opt/local
+server_id=$3
+
+function usage() {
+	echo "$0 filename instance_number server_id "
+	exit 1
+}
+
+if [[ $# < 3 ]]
+then
+	usage
+	exit 1
+fi
+
+function check_file() {
+	if [ ! -f $1 ]
+	then
+		echo "$1 file is not exist!"
+		exit 1
+	fi
+}
+
+function check() {
+	check_file /opt/local/bin/mysql_dbs_init.sh
+	check_file /opt/local/bin/mysql.server
+	check_file /opt/local/bin/mysql_init
+}
+
+function check_pkg() {
+	local pn=$(rpm -q  $1)
+	if [ "$pn" == "package $1 is not installed" ]
+	then
+		echo "please install $1"
+		exit 1
+	fi
+}
+
+function env_prep() {
+	check_pkg libaio
+	env_check.sh openfiles || exit 1
+}
+
+function build() {
+	local srcfile=$1
+	local destpath=$2
+	local srcpath=$(dirname $srcfile)
+	local tmp_dir=$srcpath/mysql-tmp
+	rm -rf $tmp_dir
+	mkdir -p $tmp_dir
+	tar xzvf $srcfile -C $tmp_dir > /dev/null || exit 1
+	cd $tmp_dir
+	fn=$(ls)
+	cd $tmp_dir
+	rm -rf /opt/local/$fn
+	mv $fn  /opt/local/
+	rm /opt/local/mysql -rf
+	ln -s /opt/local/$fn /opt/local/mysql
+}
+
+env_prep
+check
+build $filename $binpath
+/opt/local/bin/mysql_init $ins_num $server_id
+
+echo "finish!"
+echo "quit"

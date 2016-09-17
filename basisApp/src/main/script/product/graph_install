@@ -1,0 +1,108 @@
+#! /usr/bin/env python
+
+import os, os.path
+import sys
+import stat
+import shutil
+from time import time
+
+from optparse import OptionParser
+
+# The directories, which the Redgraph will be used in run time.
+redgraph_directories = {
+    'etc'  : '/opt/etc/redgraph',
+    'data' : '/opt/data/redgraph',
+    'run'  : '/opt/var/run/redgraph',
+    'log'  : '/opt/var/log/redgraph'
+}
+        
+def build(srcfile, outdir):
+    dirpath, filename = os.path.split(srcfile)
+
+
+    dirpath = "%s/graph_tmp"%dirpath
+    # extract source file into the same directory with tar.gz file.
+    print "Extract source file into %s." % dirpath
+     
+    os.system("mkdir %s"%dirpath)
+    print 'tar xvfz %s -C %s' % (srcfile, dirpath)
+    ret = os.system( 'tar xvfz %s -C %s' % (srcfile, dirpath) )
+    if ret != 0:
+        # print "Extract source code from %s failure: %s" % (srcfile, sys.exc_info()[0])
+        raise RuntimeError("Extract source code from %s failure: %s" % (srcfile, sys.exc_info()[0]))
+    
+    subdir=""
+    for fn in os.listdir(dirpath):
+        subdir=fn
+    os.chdir("%s/%s"%(dirpath, subdir))	
+     
+    if not os.path.isdir(outdir):
+        print "Outpath directory %s doesn't exist, create it." % outdir
+        os.makedirs(outdir)
+         
+    # build and install
+    print "Build and install Redgraph into %s." % outdir
+    ret = os.system( "make PREFIX=%s install" % outdir )
+    if ret != 0:
+        # print "Build failure: %s" % sys.exc_info()[0]
+        raise RuntimeError("Build failure: %s" % sys.exc_info()[0])
+
+def make_structure(dirs):
+    for d in dirs:
+        if not os.path.isdir(d):
+            print "Directory %s doesn't exist, create it." % d
+            os.makedirs(d)
+            
+def config(inst_num, max_mem, slaveof="", master=False):
+    os.system("graph_init %s %s %s" % (inst_num, max_mem, slaveof));
+    if master:
+        os.system("graph_init %s %s" % (1, max_mem));
+
+USAGE = '''
+    graph_install [options] source_code_file instance_number memory_size [slaveof]
+
+Description:
+    Tool to install Redgraph.       
+
+Arguments:
+    source_file            - the path of source code file.
+    instance_number        - how many instance will be created.
+    memory_size            - memory size for each instance.
+    slaveof                - the ip address and port of the master server, it's optional.
+    master                 - master flags, value is master, it's optional.
+
+Example: 
+    graphinstall /opt/downloads/redgraph-xxx-SNAPSHOT.tar.gz 3 10 vip-raid1:6121
+'''
+
+def main():
+    parser = OptionParser(version="1.6.2-SNAPSHOT")
+    
+    parser.usage = USAGE
+    (options, args) = parser.parse_args()
+    
+    if len(args) < 3:
+        parser.print_help()
+        sys.exit(1)
+    
+    if os.system("/opt/local/bin/env_check.sh") != 0:
+        sys.exit(1)
+
+    config_dir = os.path.abspath(os.path.dirname(__file__))
+    
+    make_structure(redgraph_directories.values())
+    build(args[0], '/opt/local/redgraph')
+    
+    print "Generate configuration file for Redgraph instances."
+    os.system("/opt/local/bin/bakup.sh /opt/etc/redgraph cnf")
+    if len(args) == 4:
+        config(int(args[1]), int(args[2]), args[3])
+    elif len(args) == 5:
+        config(int(args[1]), int(args[2]), args[3], True)  
+    else:
+        config(int(args[1]), int(args[2]))
+    print "finish!"
+
+if __name__ == '__main__':
+    main()
+

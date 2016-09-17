@@ -1,0 +1,19 @@
+1. 设置模版
+	创建自己的模版，系统内置模版不让修改。
+	Window--Preferences--Java--Code Style--Formatter--new
+2. 安装maven插件后eclipse会出现如下警告：
+	The Maven Integration requires that Eclipse be running in a JDK, 
+	because a number of Maven core plugins are using jars from the JDK.
+	Please make sure the -vm option in eclipse.ini is pointing to a JDK 
+	and verify that Installed JRE’s are also using JDK installs. 
+	a、设置系统安装JDK目录‘Window’ -> ‘Preferences’ -> ‘Java’ -> ‘Installed JREs’.
+	b、添加JDK到eclipse.ini中(-vm在-vmargs之前)
+		-vm
+		C:\Program Files\Java\jdk1.6.0_24\jre\bin\javaw
+		-vmargs
+3.添加jreloader
+	下载 JReloader的jar包jreloader.jar
+	在eclipse配置的Installed JREs中,在当前JVM的启动参数Default VM Argument中写上
+		-noverify -javaagent:D:\jreloader-0.4\jreloader.jar  -Djreloader.dirs=D:\work32\.metadata\.plugins\org.eclipse.wst.server.core\tmp0\wtpwebapps\rewardstep\WEB-INF\classes
+	就是在项目的 META-INF 目录中创建 context.xml 文件，在其中写上
+		<Context antiResourceLocking="false" privileged="true" reloadable="false"/>

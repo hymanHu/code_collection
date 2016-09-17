@@ -1,0 +1,100 @@
+Morphia开发简介
+	Morphia是一个开源对象关系映射框架，它对MongoDB数据库java版驱动进行了非常轻量级的对象封装。
+	数据存储（DataStore） 和?DAO<T,V>访问抽象，或自己实现...
+	使用运行时验证的类型安全 （Type-safe）和 Fluent 查询(Query) 支持
+	基于注解的行为映射，无XML文件
+	扩展 ：Validation（jsr303）?，以及SLF4J日志
+	生命周期方法/事件（Lifecycle Method/Event） 支持
+	可与Guice、Spring和其它DI框架很好整合或协作
+	很多扩展点（新的注解，转换器，行为映射，日志等）
+	不存储Null/Empty值（默认）
+	GWT支持（实体仅为POJO） - （GWT忽略注释）
+	允许原始类型、void toObject(DBObject) 或 DBObject ?fromObject(Object)?fromObject的高级映射器
+Morphia中Java注释使用
+	@Id
+		注释指示 Morphia 哪个字段用作文档 ID。如果试图持久保存对象（其?@Id?注释的字段为 null），则 Morphia 会自动生成 ID 值。
+	@Entity 
+		注释是必需的。其声明了在专用MongoDB集合上该类作为文档将持久保存。在默认情况下，Morphia 使用类名称来命名集合。
+	@Embedded
+		注释说明 Morphia将此对象实例嵌入到另一个对象中去。而不单独的放到一个MongoDB 集合。
+	@Reference
+		注释说明对象是对另外一个集合中的文档的引用。在从 MongoDB 集合中加载对象时，Morphia 遵循着这些引用来建立对象关系。 
+	@Indexed 
+		类属性标记@Indexed注释， 表明为此属性增加索引。
+	@Property
+		类属性标记@ Property注释， 表明为此属性在MongoDB数据库取一个别名。
+	@Transient
+		类属性标记@Transient注释则表明这个字段将不被持久化到数据库。
+Morphia编程模型 
+	定义被持久类
+		@Entity
+		class MyEntity {
+			@Id 
+			ObjectId id;
+			String name;
+		}
+	初始化morphia
+		Mongo mongo = new Mongo("localhost");//连接到本地mongoDB数据库
+		Morphia morphia = new Morphia();
+		morphia.mapPackage("MyEntity");//告诉Morphia映射哪些类
+		Datastore ds = morphia.createDatastore(mongo ,"myDB");//创建名为“myDB”数据库，mongo最好使用单实例模式
+		ds.ensureIndexes(); //在标记为@Id的类属性上创建索引
+		ds.ensureCaps(); //设置默认的mongoDB集合容量
+	保存被持久化类
+		MyEntity e = ...;
+		ds.save(e);//将MyEntity对象持久化到mongoDB数据库中
+	查询
+		MyEntity e =ds.find(MyEntity.class).get();//通过类型取的第一个数据项
+		MyEntity e = ds.find(MyEntity.class).field("name").equal("someName").get();
+	Datasotre接口
+		Datastore接口把Java对象保存到MongoDB或从MongoDB中访问Java对象提供了安全类型的方法。
+		它提供了get/find/save/delete方法为你操作Java对象。
+	Get方法
+		返回一个实体对象通过@Id.get方法只是find(...)方法的一个精简版，通过ID访问。它会返回一个实体对象，或者null如果没有找到的话。
+		Datastore ds = ...
+		Hotel hotel = ds.get(Hotel.class, hotelId);
+	Find方法
+		只是对Query的一个轻量级的封装。 作为封装它将返回一个Query，它实现Iterable<T>和QueryResults接口。
+		//在循环中使用
+		for(Hotel hotel : ds.find(Hotel.class, "stars >", 3))
+	   		print(hotel);
+			作为一个List返回
+			List<Hotel> hotels = ds.find(Hotel.class, "stars >", 3).asList();
+			//对结果排序
+			List<Hotel> hotels = ds.find(Hotel.class, "stars >", 3).sort("-stars").asList();
+			//返回第一个符合条件的结果
+			Hotel gsHotel = ds.find(Hotel.class, "name", "Grand Sierra").get();
+　　			这里是有效的操作符列表["=", "==", "!=", "<>", ">", "<", ">=", "<=", "in", "nin", "all", "size", "exists"]。
+			如果没有指定操作符默认使用"=", ?就像上面的例子，"="和“==”是等价的表示相等，"!="和"<>"是等价的表示不相等。
+	Save方法
+		大部分对MongoDB数据库操作的工作及Morphia映射解析工作已由Morphia完成。
+		Hotel hotel = new Hotel();
+		ds.save(hotel);
+		//@Id 属性如果没有指定的话，将被自动生成， 
+		ObjectId id = hotel.getId();
+	Delete方法
+		它已很好的自我解释，delete方法将从MongoDB数据库删除数据项，基于一个查询如id或其它条件。
+		Datastore ds = ...
+		//通过指定主键Id，删除数据项
+		ds.delete(Hotel.class, "Grand Sierra Resort");
+		//基于一个查询，删除数据项
+		ds.delete(ds.createQuery(Hotel.class).filter("pendingDelete", true));
+		在morphia支持mongoDB以原子方式做一些操作的功能。如删除一个实体，并且同时返回要删除的项。 
+		FindAndDelete方法首先查询要删除的项，并且删除。
+	Update方法
+		Updates应用在服务器上并且允许复杂但非常有效的修改。
+		@Entity
+		class User{
+			@Id private ObjectId id;
+			private long lastLogin;
+			//... 其它属性
+			private Query<User> queryToFindMe() {
+				return datastore.createQuery(User.class).field(Mapper.ID_KEY).equal(id);
+			}
+			public void loggedIn(){
+				long now = System.currentTimeMillis();
+				UpdateOperations<User>  ops  = datastore.createUpdateOperations(User.class).set("lastLogin", now);
+				ds.update(queryToFindMe(), ops);
+				lastLogin = now;
+			}
+		}

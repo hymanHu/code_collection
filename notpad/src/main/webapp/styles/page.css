@@ -1,0 +1,22 @@
+@CHARSET "utf-8";
+/*page*/
+.page{
+	height:38px;
+	overflow:hidden;
+}
+.page a{
+	width:50px;
+	height:34px;
+	line-height:34px;
+	text-align:center;
+	color:#0074AD;
+	font-weight:900;
+}
+.page span{
+	width:100px;
+	height:34px;
+	text-align:center;
+}
+.page .selected{
+	color:#EE7C00;
+}

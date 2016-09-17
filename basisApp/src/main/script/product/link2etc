@@ -1,0 +1,16 @@
+#! /bin/bash
+
+sroot=/opt/local/bin
+droot=/etc/init.d/
+if [ "$(whoami)" != "root" ]
+then
+	echo "Please use Root Account execute."
+	exit 1
+fi
+
+ln -s $sroot/mysql.server $droot/mysql.server > /dev/null 2>&1  
+ln -s $sroot/keepalived.server $droot/keepalived.server > /dev/null 2>&1
+ln -s $sroot/redis.server $droot/redis.server > /dev/null 2>&1
+ln -s $sroot/memcached.server $droot/memcached.server > /dev/null 2>&1
+ln -s $sroot/redgraph.server $droot/redgraph.server > /dev/null 2>&1
+

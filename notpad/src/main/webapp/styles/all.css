@@ -1,0 +1,157 @@
+@CHARSET "utf-8";
+/*common*/
+html,body{
+	margin:0px;
+	padding:0px;
+	font-family:Verdana, Geneva, sans-serif;
+	font-size:12px;
+}
+ul,ol,li,dt,dl,dd{
+	list-style:none;
+}	
+ul,ol,li,dt,dl,dd,h1,h2,h3,h4,h5,h6{
+	margin:0px;
+	padding:0px;
+}
+.allWrap{
+	margin:0px auto;
+	text-align:center;
+	width:1003px;
+	background:url(../images/pageBg.jpg) 1px 0 repeat-y;
+	background:url(../images/pageBg.jpg) repeat-y;
+}
+.fl{
+	float:left;
+}
+.fr{
+	float:right;
+}		
+.cl{
+	clear:both;
+	font-size:none;
+}
+.mL11{
+	margin-left:11px;
+}	
+.mR11{
+	margin-right:11px;
+}
+.mR5{
+	margin-right:5px;
+}
+.mT8{
+	margin-top:8px;
+}	
+.cursor{
+	cursor:pointer;
+}
+/*head*/
+.headWrap{
+	margin:0px auto;	
+	width:965px;
+	height:95px;
+	background:#f4f2e9;
+	border-bottom:1px solid #d2d2bf;
+}
+.headWrap .headBlackLine{
+	width:100%;
+	height:29px;
+	background:#30332c;
+}
+.headWrap .logo{
+	float:left;
+	display:inline;
+	width:300px;
+	height:65px;
+	background:url(../images/logo.jpg);
+}
+.headWrap .loginInfo{
+	margin-top:14px;
+	float:right;
+	padding:10px;
+	text-align:right;
+	line-height:22px;
+}
+.headWrap .loginInfo a:link, .headWrap .loginInfo a:visited{
+	color:#ce292d;
+	text-decoration:none;
+	font-size:15px;	
+}
+/*body*/
+.bodyWrap{
+	margin:0px auto;
+	width:965px;
+  	min-height:400px;
+ 	 _height:expression(this.scrollHeight < 400 ? "400px" : "auto");
+}
+/*bottom*/
+.bottomWrap{
+	margin:0px auto;	
+	width:965px;
+	height:64px;
+	background:#30332c;	
+	border-bottom:1px solid #d2d2bf;	
+}
+.bottomWrap	.leftSideText{
+	float:left;
+	margin-left:16px;
+	display:inline;
+	line-height:60px;
+	font-size:13px;
+	color:#CCC;
+}
+/*textColor*/
+.redText{
+	color:#ce292d;
+}
+.darkText{
+	color:#999;
+}
+.blackText{
+	color:#000;
+}
+/*button*/
+.btSubmit{
+	float:left;
+	display:block;
+	width:94px;
+	height:35px;
+	background:url(../images/btSubmitBg.gif);
+	color:#FFF;
+	line-height:34px;
+	font-size:16px;
+	text-decoration:none;	
+}
+.btSubmit:link,	.btSubmit:visited{
+	color:#FFF;	
+}
+.btCancel{
+	float:left;
+	margin-left:11px;
+	display:block;
+	width:94px;
+	height:35px;
+	background:url(../images/btCancelBg.gif);
+	color:#FFF;
+	line-height:34px;
+	font-size:16px;
+	text-decoration:none;	
+}
+.btCancel:link,	.btCancel:visited{
+	color:#FFF;	
+}
+.btRegist{
+	float:left;
+	margin-left:11px;
+	display:block;
+	width:94px;
+	height:35px;
+	background:url(../images/btSubmitBg.gif);
+	color:#FFF;
+	line-height:34px;
+	font-size:16px;
+	text-decoration:none;
+}
+.btRegist:link,	.btRegist:visited{
+	color:#FFF;	
+}

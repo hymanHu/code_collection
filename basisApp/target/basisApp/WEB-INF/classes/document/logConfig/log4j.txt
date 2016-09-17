@@ -1,0 +1,2 @@
+1、异常
+	1.1、找不到log4j.dtd文件，解压log4j.jar，org/apache/log4j/xml/log4j.dtd，拷贝到相应目录即可

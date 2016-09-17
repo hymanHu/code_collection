@@ -1,0 +1,41 @@
+#!/usr/bin/perl -w
+use strict;
+use warnings;
+
+use Data::Dumper;
+
+use LJ::MPRPC;
+
+my $server;
+my @command;
+
+if (scalar @ARGV < 2 ){
+    usage();
+}
+
+($server, @command) = @ARGV;
+unless ($server) {
+    usage();
+}
+
+my ($host, $port) = split(/:/, $server);
+
+my $cmd = join(' ', @command);
+
+my $client = mprpc_client($host, $port);
+
+my $cv = $client->call("console" => [ $cmd ]);
+my $ret = eval { $cv->recv };
+
+if ($@) {
+    my $e = $cv->ready;
+    die Dumper($e);
+}
+
+print $ret->[1];
+
+sub usage
+{
+    print "help";
+    exit 0;
+}

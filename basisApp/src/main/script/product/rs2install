@@ -1,0 +1,105 @@
+#! /usr/bin/python
+
+import os, os.path
+import sys, stat
+from optparse import OptionParser
+
+def find_uncompressed_dir(output_dir, tarfile):
+
+    matched = None
+    for filename in os.listdir(output_dir):
+        if tarfile.startswith(filename):
+            
+            filepath = os.path.join(output_dir, filename)
+            if os.path.isdir(filepath):
+                mt = os.stat(filepath)[stat.ST_MTIME]
+                if matched is None or os.stat(matched)[stat.ST_MTIME] < mt:
+                    matched = filepath
+                
+    return matched
+    
+def install(srcfile, output_dir):
+    if not os.path.isdir(output_dir):
+        print "Output directory not found, create it. %s" % output_dir
+        os.makedirs(output_dir)
+    
+    # uncompress tar.gz file. 
+    print "Unpress file %s into %s." % (srcfile, output_dir)   
+    ret = os.system("tar xvfz %s -C %s" %(srcfile, output_dir))
+    if ret != 0:
+        raise RuntimeError("Uncompress %s to %s failure." % (srcfile, output_dir))
+    
+    # make a symbol link.
+    server_dir = find_uncompressed_dir(output_dir, os.path.basename(srcfile))  
+    slink = os.path.join(output_dir, 'rs-server')
+    
+    # if link exists, remove old at first and create a new.
+    print "Create a symbol link, %s" %slink
+    if os.path.islink(slink):
+        os.unlink(slink)
+    os.symlink(server_dir, slink)
+    os.system("chmod +x %s/bin/*"%slink)	
+        
+def config(work_dir, zk_hosts, zk_node, syslog_server):
+    
+    rs_main = os.path.join(work_dir, 'rs-server', 'config', 'rs-main.xml')
+    
+    # replace zookeeper servers.
+    print "Update the value of zookeeper servers in config file %s." % rs_main
+    cmd = r"sed -i -e 's#\(<host>\)\(.*\)\(</host>\)#\1%s\3#' %s" % (zk_hosts, rs_main)
+    ret = os.system(cmd)
+    if ret != 0:
+        raise RuntimeError("Update config file content failure. %s" % rs_main)
+    
+    # replace zookeeper 
+    print "Update node of zookeeper in config file %s." % rs_main
+    cmd = r"sed -i -e 's#\(<rootConfigNode>\)\(.*\)\(</rootConfigNode>\)#\1%s\3#' %s" % (zk_node, rs_main)
+    ret = os.system(cmd)
+    if ret != 0:
+        raise RuntimeError("Update config file content failure. %s" % rs_main)
+    
+    log_config = os.path.join(work_dir, 'rs-server', 'config', 'log4j.xml')    
+    
+    print "Update syslog server address in config file %s." % log_config
+    # replace log4j config
+    cmd = r"sed -i -e 's#\(<param name=\"SyslogHost\" value=\"\)\(.*\)\(\" />\)#\1%s\3#' %s" %(syslog_server, log_config)
+    ret = os.system(cmd)
+    if ret != 0:
+        raise RuntimeError("Update log4j config error. %s" % log_config)
+
+USAGE = '''
+    rs2install [options] install_file_name zk_servers zk_node syslog_server
+
+Description:
+    Tool to install Relation Server.       
+
+Options:
+    install_file_name        - the relation server package name.
+    zk_servers               - zookeeper servers, which the relation server will connection to them while starting.
+    zk_node                  - the node which contains relation server's config.
+    syslog_server            - syslog server, relation server will upload the log to it.
+'''
+    
+def main():
+    # config("/opt/local/rs-server", "raid-1", '/rs-main-public-1', '172.17.20.34)
+    parser = OptionParser(version="1.6.2-SNAPSHOT")
+    
+    parser.usage = USAGE
+    (options, args) = parser.parse_args()
+    
+    if len(args) < 4:
+        parser.print_help()
+        exit(1)
+    
+    print "Relation server installation starting."
+    srcfile = args[0]
+    if not os.path.isfile(srcfile):
+        raise IOError("source file not found: %s" % srcfile)
+    
+    install(srcfile, "/opt/local")
+    config("/opt/local", args[1], args[2], args[3])
+    print "Install success."
+    
+if __name__ == '__main__':
+    main()
+

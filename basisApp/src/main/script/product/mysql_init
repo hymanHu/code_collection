@@ -1,0 +1,94 @@
+#! /bin/bash
+
+ins_num=$1
+binpath=/opt/local
+server_id=$2
+
+function usage() {
+	echo "$0 instance_number server_id"
+	exit 1
+}
+
+if [[ $# < 2 ]]
+then
+	usage
+	exit 1
+fi
+
+function check_file() {
+	if [ ! -f $1 ]
+	then
+		echo "$1 file is not exist!"
+		exit 1
+	fi
+}
+
+function check_host() {
+	vip=$(/opt/local/bin/gethostip $vhost)
+	if [ "$vip" == "" ]
+	then
+		echo "can't resolv host $vhost"
+		exit 1
+	fi
+}
+
+function check() {
+	check_file /opt/local/bin/mysql_dbs_init.sh
+	check_file /opt/local/bin/mysql.server
+	check_file /opt/local/bin/bakup.sh
+}
+
+function check_pkg() {
+	local pn=$(rpm -q  $1)
+	if [ "$pn" == "package $1 is not installed" ]
+	then
+		echo "please install $1"
+		exit 1
+	fi
+}
+
+function env_prep() {
+	check_pkg libaio
+}
+
+function check_mysql() {
+	timeout=1
+	for (( i=0; i<60; i++ ))
+	do
+		if [ "$(netstat -an|grep 0.0.0.0:3306)" != "" ]
+		then
+			timeout=0
+			break
+		fi
+		echo "starting mysql"
+		sleep 1
+	done
+	if [ $timeout == 1 ]
+	then
+		echo "start mysql timeout"
+		exit 1
+	fi
+}
+
+function add_user() {
+	server=`hostname`
+	mysql --defaults-file=/opt/etc/mysql/db1.cnf --user=root << END
+    use mysql;
+    delete from user where Host= '$server';
+    delete from user where User='';
+    GRANT ALL PRIVILEGES ON *.* TO 'lj'@'%' IDENTIFIED BY 'livejournal' WITH GRANT OPTION;
+    GRANT REPLICATION SLAVE ON *.* TO 'rsync'@'%' IDENTIFIED BY 'sync1';
+    flush privileges;
+END
+
+}
+
+env_prep
+check
+/opt/local/bin/bakup.sh /opt/etc/mysql cnf
+mysql_dbs_init.sh $ins_num $server_id
+mysql.server start
+check_mysql
+add_user
+
+echo "finish initial mysql!"

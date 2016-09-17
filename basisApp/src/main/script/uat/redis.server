@@ -1,0 +1,77 @@
+#!/bin/bash
+
+
+redis="/opt/local/redis/bin/redis-server"
+rediscli="/opt/local/redis/bin/redis-cli"
+
+usage() {
+  echo $"Usage: $0 {start|stop|info} type(queue or attr)"
+  exit
+}
+
+if [ "`whoami`" != "lj" ]
+then
+  echo "please use lj account"
+  exit 0
+fi
+
+
+
+start() {
+  local type=$1
+  for f in `ls /opt/etc/$type/*.cnf`;
+  do
+    `$redis $f`
+  done;
+  echo "server start"
+}
+
+stop() {
+  local type=$1
+  for f in `ls /opt/var/run/$type/*.socket`;
+  do
+    echo -en 'shutdown'|$rediscli -s $f
+  done
+  echo "server stop"
+}
+
+restart() {
+echo "restarting..."
+stop $1
+start $1
+
+}
+
+info() {
+  local type=$1
+  for f in `ls /opt/var/run/$type/*.socket`;
+  do
+    echo -en 'info'|$rediscli -s $f
+    echo "-----------------------------------------"
+  done
+}
+
+if [ "$2" != "queue" ] && [ "$2" != "attr" ]
+then
+	usage
+	exit 1
+fi
+
+
+case "$1" in
+    start)
+        $1 $2
+        ;;
+    stop)
+        $1 $2
+        ;;
+    info)
+        $1 $2
+        ;;
+    restart)
+        $1 $2
+        ;;
+    *)
+        usage
+        ;;
+esac

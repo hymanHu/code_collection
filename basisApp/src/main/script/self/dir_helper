@@ -1,0 +1,30 @@
+#! /bin/bash
+mkdir -p /opt/downloads
+mkdir -p /opt/local
+mkdir -p /opt/local/bin/
+mkdir -p /opt/local/jetty
+mkdir -p /opt/var/run
+mkdir -p /opt/var/log
+mkdir -p /opt/var/lock
+mkdir -p /opt/data/redis
+mkdir -p /opt/var/lock/subsys
+mkdir -p /opt/etc/redis
+mkdir -p /opt/etc/rs-client
+mkdir -p /opt/data/mysql
+mkdir -p /opt/var/run/mysql
+mkdir -p /opt/var/log/mysql
+mkdir -p /opt/etc/mysql
+mkdir -p /opt/data/zookeeper
+mkdir -p /opt/etc/queue
+mkdir -p /opt/data/queue
+mkdir -p /opt/var/run/queue
+mkdir -p /opt/var/log/queue
+mkdir -p /opt/data/attr
+mkdir -p /opt/etc/attr
+mkdir -p /opt/var/run/attr
+mkdir -p /opt/var/log/attr
+mkdir -p /opt/data/redgraph
+mkdir -p /opt/var/run/redgraph
+mkdir -p /opt/var/log/redgraph
+mkdir -p /opt/etc/redgraph
+find /opt/. |xargs chown lj:lj

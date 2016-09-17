@@ -1,0 +1,65 @@
+@CHARSET "utf-8";
+/*left*/
+.leftMenuWrap{
+	float:left;
+	width:180px;
+}
+.leftMenu{
+	width:180px;
+	text-align:left;
+	background:#f4f2e6;
+	border:1px solid #bfbfb4;
+}
+.leftMenu dt{
+	height:29px;
+	background:url(../images/leftMenuTitleBg.jpg) repeat-x;
+	color:#FFF;
+	font-family:Arial, Helvetica, sans-serif;
+	font-size:13px;
+	font-weight:bold;
+	line-height:26px;
+	padding-left:11px;
+}
+.leftMenu dd{
+	position:relative;		
+	height:29px;
+	font-size:13px;
+	line-height:28px;
+	cursor:pointer;	
+	zoom:1;
+	padding-left:8px;
+}
+.leftMenu .selected{
+	background:#e96e64;
+}
+.leftMenu .unselected{
+	background:none;
+}
+.leftMenu .unselected img{
+	display:none;
+	position:absolute;
+	float:right;
+	right:-7px;
+	top:5px;
+}		
+.leftMenu img{
+	display:none;	
+}
+.leftMenu a{
+	padding-left:11px;
+	display:block;
+}
+.leftMenu a:link, .leftMenu a:visited{
+	color:#000;
+	text-decoration:none;
+} 	
+.leftMenu .selected img{
+	display:block;
+	position:absolute;
+	float:right;
+	right:-7px;
+	top:5px;
+}
+.noBottomBorder{
+	border-bottom:none;
+}

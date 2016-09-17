@@ -1,0 +1,40 @@
+#! /bin/bash
+
+mm=30720
+pid_dir=/opt/var/run/memcached
+mode=$1
+user=memcached
+
+if [ ! -x /opt/local/bin/memcached ]
+then
+	echo "/opt/local/bin/memcached can't execute, please check"
+	exit 1
+fi
+
+case "$mode" in
+  'start')
+    memcached -p 11211 -P $pid_dir/m11211.pid -m $mm -d -u $user
+    memcached -p 11212 -P $pid_dir/m11212.pid -m $mm -d -u $user
+	echo "server started"
+    ;;
+  'stop')
+    for pid in `ls $pid_dir/*.pid`;
+     do
+       memcached_pid=`cat "$pid"`
+       if (kill -0 $memcached_pid 2>/dev/null)
+       then
+         echo $echo_n "Shutting down Memcached"
+         kill $memcached_pid
+       else
+         echo "Memcached server process #$memcached_pid is not running!"
+         rm "$pid"
+       fi
+     done
+     ;;
+  *)
+    basename=`basename "$0"`
+    echo "Usage: $basename  {start|stop}  [ memcached server options ]"
+    exit 1
+    ;;
+esac
+

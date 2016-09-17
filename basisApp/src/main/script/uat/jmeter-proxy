@@ -1,0 +1,99 @@
+#! /bin/bash
+
+#servers=("172.17.20.32")
+servers=("172.17.20.31" "172.17.20.32" "172.17.20.33" "172.17.20.34" "172.17.20.45" "172.17.20.52" "172.17.20.53" "172.17.20.16" "172.17.20.54")
+
+version=1.6.0
+
+function deploy() {
+	mkdir jmeter_tmp -p
+	wget http://172.17.20.100:8080/job/performance-test/lastBuild/com.livejournal.service.relation.performance\$rs-performance-test/artifact/com.livejournal.service.relation.performance/rs-performance-test/${version}-SNAPSHOT/rs-performance-test-${version}-SNAPSHOT-jmeter.tar.gz -O rs-performance-test-${version}-SNAPSHOT-jmeter.tar.gz
+
+	tar xzvf rs-performance-test-${version}-SNAPSHOT-jmeter.tar.gz -C jmeter_tmp
+
+	rm rs-performance-test-${version}-SNAPSHOT-jmeter.tar.gz -rf
+	for server in ${servers[@]}
+	do
+		ssh lj@$server "rm -rf rs-performance-test-${version}-SNAPSHOT-jmeter"
+		scp -r jmeter_tmp/* lj@${server}:~/.
+	done
+}
+
+function restart() {
+	cat >start_jmeter<<END
+#! /bin/bash
+pid=\$(ps -ef|grep java|grep ApacheJMeter.jar|awk '{print \$2}')
+if [ "\$pid" != "" ]
+then
+	kill \$pid
+fi
+. /etc/profile
+cd /home/lj/rs-performance-test-${version}-SNAPSHOT/jmeter/bin/
+nohup ./jmeter -n -t ~/ip.jmx > /dev/null &
+END
+
+	chmod +x start_jmeter
+
+	for server in ${servers[@]}
+	do
+		echo "start the server $server"
+		scp -r start_jmeter lj@${server}:~/.
+		ssh lj@${server} "~/./start_jmeter"
+	done
+	rm -rf start_jmeter
+}
+
+
+function info() {
+	cat >pid_jmeter<<END
+#! /bin/bash
+pid=\$(ps -ef|grep java|grep ApacheJMeter.jar|awk '{print \$2}')
+echo jmeter pid is \$pid
+END
+	chmod +x pid_jmeter
+	for server in ${servers[@]}
+	do
+		echo "info $server"
+		scp -r pid_jmeter lj@${server}:~/.
+		ssh lj@${server} "~/./pid_jmeter"
+	done
+	rm pid_jmeter
+}
+
+function stop() {
+	cat >stop_jmeter<<END
+#! /bin/bash
+pid=\$(ps -ef|grep java|grep ApacheJMeter.jar|awk '{print \$2}')
+if [ "\$pid" != "" ]
+then
+	kill \$pid
+fi
+END
+
+	chmod +x stop_jmeter
+
+	for server in ${servers[@]}
+	do
+		scp -r stop_jmeter lj@${server}:~/.
+		ssh lj@${server} "~/./stop_jmeter"
+	done
+	rm -rf stop_jmeter
+}
+
+case "$1" in
+	restart)
+		$1
+	;;
+	deploy)
+		$1
+	;;
+	stop)
+		$1
+	;;
+	info)
+		$1
+	;;
+	*)
+		echo "$0 (restart|stop|deploy|info)"
+	;;
+esac

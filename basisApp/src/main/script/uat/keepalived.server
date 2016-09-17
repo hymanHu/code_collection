@@ -1,0 +1,107 @@
+#! /bin/bash
+
+serv=/opt/local/keepalived/sbin/keepalived
+cnf=/opt/etc/keepalived/keepalived.cnf
+pid=/opt/var/run/keepalived.pid
+rgcli=/opt/local/redgraph/bin/redgraph-cli
+rdcli=/opt/local/redis/bin/redis-cli
+graph_check_list=("server-ssd2:6120" "server-raid3:6120")
+queue_check_list=("server-ssd1:5210" "server-ssd1:5211" "server-raid2:5210" "server-raid2:5211")
+
+function usage() {
+    echo $"Usage: $0 {start|stop|info}"
+    exit 1
+}
+
+if [ "$(whoami)" != "root" ]
+then
+  echo "please use root account"
+  exit 1
+fi
+
+cmd=$0
+
+
+function check_graph() {
+	local server=$1
+	local port=$2
+	local st=$($rgcli -h $server -p $port info|grep loading:|awk -F : '{print $2}')
+	st=$(echo $st|tr -d "\r\n")
+	if [ "${st}" != "0" ]
+	then 
+		echo "$server:$port graph is starting, please wait... "
+		sleep 5
+		check_graph $server $port
+	fi
+}
+
+function check_queue() {
+	local server=$1
+	local port=$2
+	local st=$($rdcli -h $server -p $port info|grep loading:|awk -F : '{print $2}')
+	st=$(echo $st|tr -d "\r\n")
+	if [ "${st}" != "0" ]
+	then 
+		echo "$server:$port queue is starting, please wait... "
+		sleep 5
+		check_queue $server $port
+	fi
+}
+
+function start() {
+    ipvsadm > /dev/null
+	local check=$1
+	echo $1
+	if [ "$check" == "graph" ]
+	then
+		for hostp in ${graph_check_list[@]}
+		do
+			local host=$(echo $hostp|awk -F : '{print $1}')
+			local port=$(echo $hostp|awk -F : '{print $2}')
+			check_graph $host $port
+		done
+	fi
+	if [ "$check" == "queue" ]
+	then
+		for hostp in ${queue_check_list[@]}
+		do
+			local host=$(echo $hostp|awk -F : '{print $1}')
+			local port=$(echo $hostp|awk -F : '{print $2}')
+			check_queue $host $port
+		done
+	fi
+    $serv -p $pid -f $cnf
+    echo "please use command:"
+    echo "$0 info"
+    echo "show keepalived process is exist!"
+}
+
+function stop() {
+    if [ -f $pid ]
+    then
+        cat $pid|xargs kill
+    fi
+    rm $pid -f
+    echo "server stop~!"
+}
+
+function info() {
+    ps -ef|grep keepalived|grep cnf
+}
+
+case "$1" in
+    start)
+        $1 $2
+        ;;
+    stop)
+        $1
+        ;;
+    info)
+        $1
+        ;;
+    *)
+        usage
+        ;;
+esac
+
+

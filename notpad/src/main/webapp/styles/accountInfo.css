@@ -1,0 +1,103 @@
+@CHARSET "utf-8";
+/*accountInfo*/
+.tb_all{
+	margin: 30px auto;
+}
+.outLine{
+	border-left-width: 2px;
+	border-left-style: solid;
+	border-left-color: #c8c8c8;
+	border-top-width: 2px;
+	border-top-style: solid;
+	border-top-color: #c8c8c8;
+	border-right-width: 2px;
+	border-right-style: solid;
+	border-right-color: #c8c8c8;
+	border-bottom-width: 2px;
+	border-bottom-style: solid;
+	border-bottom-color: #c8c8c8;
+}
+#list_bt{
+	font-family: "宋体",Arial;
+	font-size: 13px;
+	line-height: 18px;
+	color: #000000; 
+	text-decoration: none;
+}
+.divLinks{float:left;margin-left: 25px;}
+#list_bt img{float:right;padding: 10px;}
+a:link { font-size: 12px;text-decoration: none;line-height: 20px;color: #4e4c4c; } 
+a:visited { font-size: 12px;text-decoration: none;line-height: 20px;color: #4e4c4c; } 
+a:hover { font-size: 12px;text-decoration: none;line-height: 20px;color: #fc7701; } 
+.bt_font14cu {
+	font-family: "宋体";
+	font-size: 18px;
+	font-weight: bold;
+	color: #000000;
+	text-decoration: none;
+}
+.n_font{
+	font-family: "宋体",Arial;
+	font-size: 12px;
+	line-height: 20px;
+	color: #4e4c4c; 
+	text-decoration: none;
+}
+.name_line_font{
+	font-family: "宋体", Arial;
+	font-size: 20px;
+	font-weight: bold;
+	color: #bc0021;
+	text-decoration: none;
+	border-bottom-width: 1px;
+	border-bottom-style: dashed;
+	border-bottom-color: #88b4e0;
+	padding-left:10px;
+}
+.resume_n_font{
+	font-family: "宋体", Arial;
+	font-size: 12px;
+	line-height: 18px;
+	color: #4c4c4c;
+	text-decoration: none;
+}
+.resume_bt1_font{
+	font-family: "宋体", Arial;
+	font-size: 13px;
+	font-weight: bold;
+	color: #2a6dbb;
+	text-decoration: none;
+	line-height: 18px;
+}
+.reasumline{
+	margin:8px auto;
+	border-bottom-width: 1px;
+	border-bottom-style: dashed;
+	border-bottom-color: #c8c8c8;
+}
+.leftTd{
+	border-top: 1px solid #E9EDF1;
+	background: none repeat scroll 0 0 #F3F7F9;
+	font-weight: bold;
+	width: 100px;
+}
+.rightTd{
+	border-top: 1px solid #E9EDF1;
+    padding-left: 10px;
+    width: 200px;
+}
+.leftTdLong{
+	border-top: 1px solid #E9EDF1;
+	background: none repeat scroll 0 0 #F3F7F9;
+	font-weight: bold;
+	width: 120px;
+}
+.rightTdLong{
+	border-top: 1px solid #E9EDF1;
+    padding-left: 10px;
+    width: 355px;
+}
+.nullDiv{
+	width: 100%;
+	height: 30px;
+}

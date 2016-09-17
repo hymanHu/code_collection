@@ -1,0 +1,37 @@
+1. non-GUI方式下部署多台Jmeter测试
+	-n:非GUI方式执行
+	-t:测试文件位置
+	-l:log文件位置,该日志文件很庞大，需要在GUI下导入才能生成监听报告
+		修改jmeter.properties文件
+			summariser.name=summary
+			summariser.interval=180
+			summariser.log=true
+			summariser.out=true
+		这样可以在控制台直接生成监听报告
+	-R:远程服务器位置
+	./jmeter -n -t ******* -l ****** -R ***.***.**.***,***.***.**.***
+	启动-R后所有server：./jmeter-server
+	
+	启动的时候，jmeter-server无法启动，指向的ip为未知ip，需要修改hostname，切换root用户，三个地方修改为一致
+	vi /etc/sysconfig/network
+	hostname ***
+	vi /etc/hosts
+	
+	如果启动jmeter-server后，跑测试用例时报错“no route to host”，则关闭防火墙
+	chkconfig iptables off 
+	service iptables stop
+2. 动态设置case参数
+	case里面引用动态变量
+	${__property(group.threads)}
+	
+	单个jmeter运行
+	./jmeter -Jproperty_name=property_value
+	./jmeter -n -t /home/lj/rs-performance-test-1.7.3-SNAPSHOT/testCase/paramTest.jmx -Jgroup.threads=10 -Jgroup.loop=100 -Jhost=172.17.20.55 -Jport=10000 -Jmethod=1 -JattrSize=1 -JdistSize=1
+	
+	多个jmeter运行(-R方式)
+	./jmeter -Gproperty_name=property_value
+	./jmeter -n -t /home/lj/rs-performance-test-1.7.3-SNAPSHOT/testCase/paramTest.jmx -Ggroup.threads=10 -Ggroup.loop=100 -Ghost=172.17.20.55 -Gport=10000 -Gmethod=1 -GattrSize=1 -GdistSize=1 -R 172.17.20.21
+	
+	多个jmeter带参数
+	nohup ./jmeter -n -t /home/lj/rs-performance-test-1.7.3-SNAPSHOT/testCase/paramTest.jmx -Ggroup.threads=80 -Ggroup.loop=50000 -Ghost=172.17.20.21 -Gport=10000 -Gmethod=21 -GsourceMin=1 -GsourceMax=1000 -GattrSize=0 -GdistSize=0 -l /home/lj/rs-performance-test-1.7.3-SNAPSHOT/jmeter/bin/038.log -R 172.17.20.55,172.17.20.35,172.17.20.34,172.17.20.71,172.17.20.54 > temp.log &
+	

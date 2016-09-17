@@ -1,0 +1,54 @@
+#!/bin/bash
+basedir=/opt/local/mysql
+datadir=/opt/data/mysql
+log_file_dir=/opt/var/log/mysql
+pid_file_dir=/opt/var/run/mysql
+socket_file_dir=/opt/var/run/mysql
+cnf_file_dir=/opt/etc/mysql
+bindir=$basedir/bin
+user=mysql
+mode=$1
+
+case "$mode" in
+  'start')
+    cd $basedir
+    echo $echo_n "Starting MySQL"
+    if test -x $bindir/mysqld_safe
+    then
+      for f in `ls $datadir`;
+      do
+	$bindir/mysqld_safe --defaults-extra-file=$cnf_file_dir/$f.cnf --datadir=$datadir/$f  --basedir=$basedir  --user=$user --log-error=$log_file_dir/$f.log --pid-file=$pid_file_dir/$f.pid --socket=$socket_file_dir/$f.sock &
+      done;
+    else
+      echo "Couldn't find MySQL server ($bindir/mysqld_safe)"
+    fi
+    ;;
+  'stop')
+     for pid in `ls $pid_file_dir/*.pid`;
+     do
+       mysqld_pid=`cat "$pid"`
+       if (kill -0 $mysqld_pid 2>/dev/null)
+       then
+         echo $echo_n "Shutting down MySQL"
+         kill $mysqld_pid
+       else
+         echo "MySQL server process #$mysqld_pid is not running!"
+         rm "$pid"
+       fi
+     done
+     ;;
+  'info')
+     for socket in `ls $pid_file_dir/*.sock`;
+     do
+		mysql --socket=$socket -uroot <<END
+		select 'server is running';
+END
+     done
+     ;;
+  *)
+    basename=`basename "$0"`
+    echo "Usage: $basename  {start|stop}  [ MySQL server options ]"
+    exit 1
+    ;;
+esac
+

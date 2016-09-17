@@ -1,0 +1,12 @@
+1. windows 安装telnet
+	controlpanel--programs and features--turn windows windows features on or off
+	controlpanel--administrative tools--services--tlntSvr
+	cmd--telnet 172.17.20.83 3306
+2. 修改hosts文件
+	拷贝hosts，修改后拷贝回去
+	或者，关闭controlpanel--administrative tools--services--windows defender，直接修改
+3. 配置java环境变量无效，始终默认以前的配置，竟然在system32中存在3个java*.exe文件，分别是：
+	c:/windows/system32/java.exe
+	c:/windows/system32/javaw.exe
+	c:/windows/system32/javaws.exe
+	直接删除后，在CMD中就正常了..

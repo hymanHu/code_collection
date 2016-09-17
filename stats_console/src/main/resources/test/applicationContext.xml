@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context" 
+	xmlns:tx="http://www.springframework.org/schema/tx" xmlns:aop="http://www.springframework.org/schema/aop" 
+	xmlns:p="http://www.springframework.org/schema/p" xmlns:task="http://www.springframework.org/schema/task" 
+	xsi:schemaLocation="
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd 
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd 
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd 
+		http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd">
+		
+    <!-- 需要扫描的包，@Repository、@Service、@Scheduled、@Component等 -->
+    <context:component-scan base-package="com.thornBird.think">
+    </context:component-scan>
+    
+    <!-- spring schedule配置，执行@Scheduled方法 -->
+    <task:executor id="removeDataExcutor" pool-size="2"/>
+    <task:scheduler id="removeDataScheduler" pool-size="2"/>
+    <task:annotation-driven executor="removeDataExcutor" scheduler="removeDataScheduler"/>
+    
+    <bean class="com.thornBird.think.server.taskServer.PollerJobServer" init-method="startZkAndZkListener"/>
+    <!-- 引入配置文件 -->
+    <context:property-placeholder location="file:/opt/local/jetty/config/configuration.properties" />
+    
+    <!-- 引入别的配置文件 -->
+    <import resource="springBean.xml" />
+    
+</beans>

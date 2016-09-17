@@ -1,0 +1,72 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>com.thornbird.think.framework</groupId>
+		<artifactId>framework</artifactId>
+		<version>0.0.1-SNAPSHOT</version>
+	</parent>
+	
+	<groupId>com.thornbird.think.framework.publicWebservice</groupId>
+	<artifactId>framework_webservice</artifactId>
+	<name>framework_webservice</name>
+	
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<cxf.version>2.7.8</cxf.version>
+		<!-- <weather.wsdl.file>http://webservice.webxml.com.cn/WebServices/WeatherWebService.asmx?wsdl</weather.wsdl.file> -->
+		<weather.wsdl.file>${basedir}/src/main/resources/wsdl/WeatherWebservice.xml</weather.wsdl.file>
+		<!-- <phone.wsdl.file>http://webservice.webxml.com.cn/WebServices/MobileCodeWS.asmx?wsdl</phone.wsdl.file> -->
+		<phone.wsdl.file>${basedir}/src/main/resources/wsdl/MobileCodeWS.xml</phone.wsdl.file>
+	</properties>
+	
+	<dependencies>
+		<dependency>
+			<groupId>org.apache.cxf</groupId>
+			<artifactId>apache-cxf</artifactId>
+			<version>${cxf.version}</version>
+			<type>pom</type>
+		</dependency>
+	</dependencies>
+	
+	<build>
+		<plugins>
+			<plugin>
+                <groupId>org.apache.cxf</groupId>
+                <artifactId>cxf-codegen-plugin</artifactId>
+                <version>${cxf.version}</version>
+                <executions>
+                    <execution>
+                        <id>generate-sources</id>
+                        <phase>generate-sources</phase>
+                        <configuration>
+                        	<!-- ${basedir}/target/generated/cxf -->
+                        	<sourceRoot>${project.build.directory}/generated/cxf</sourceRoot>
+                            <wsdlOptions>
+                                <wsdlOption>
+                                    <wsdl>${weather.wsdl.file}</wsdl>
+		                        	<serviceName>WeatherWebservice</serviceName>
+                                    <extendedSoapHeaders>true</extendedSoapHeaders>
+                                    <packagenames>
+                                    	<packagename>cn.com.webxml.weatherWebservice</packagename>
+                                    </packagenames>
+                                </wsdlOption>
+                                <wsdlOption>
+                                    <wsdl>${phone.wsdl.file}</wsdl>
+		                        	<serviceName>MobileCodeWS</serviceName>
+                                    <extendedSoapHeaders>true</extendedSoapHeaders>
+                                    <packagenames>
+                                    	<packagename>cn.com.webxml.mobileCodeWS</packagename>
+                                    </packagenames>
+                                </wsdlOption>
+                            </wsdlOptions>
+                        </configuration>
+                        <goals>
+                            <goal>wsdl2java</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+		</plugins>
+	</build>
+</project>
