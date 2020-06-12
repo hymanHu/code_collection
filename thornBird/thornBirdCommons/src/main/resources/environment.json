@@ -1,0 +1,134 @@
+{
+	"dev": {
+		"mainHost": "dev.${domain}.com",
+		"state": "en-us",
+		"expandHosts": {
+			"cn": {
+				"host": "dev-cn.${domain}.com",
+				"state": "cn"
+			},
+			"au": {
+				"host": "dev-au.${domain}.com",
+				"state": "en-au"
+			},
+			"ca": {
+				"host": "dev-ca.${domain}.com",
+				"state": "en-ca"
+			}
+		},
+		"service": {
+			"hostName": "dev-services.${domain}.com",
+			"port": 8085,
+			"microPort": 8998,
+			"host": "dev-services.${domain}.com:8085",
+			"microHost": "dev-services.${domain}.com:8998"
+		},
+		"jdbc": {
+			"mainDb": {
+				"url": "jdbc:sqlserver://dbms-dv148.corp.shop.com:54946;databaseName=MainDB;instance=dev",
+				"driverClass": "com.microsoft.sqlserver.jdbc.SQLServerDriver",
+				"user": "SiteLogin1",
+				"password": "Jabba1_CF0",
+				"maxIdleTime": 60,
+				"maxPoolSize": 10
+			},
+			"abyssDb": {
+				"url": "jdbc:sqlserver://dbms-dv148.corp.shop.com:54946;databaseName=AbyssDB;instance=dev",
+				"driverClass": "com.microsoft.sqlserver.jdbc.SQLServerDriver",
+				"user": "SiteLogin1",
+				"password": "Jabba1_CF0",
+				"maxIdleTime": 60,
+				"maxPoolSize": 10
+			}
+		},
+		"location": "dev"
+	},
+	"staging": {
+		"mainHost": "staging.${domain}.com",
+		"state": "en-us",
+		"expandHosts": {
+			"cn": {
+				"host": "staging-cn.${domain}.com",
+				"state": "cn"
+			},
+			"au": {
+				"host": "staging-au.${domain}.com",
+				"state": "en-au"
+			},
+			"ca": {
+				"host": "staging-ca.${domain}.com",
+				"state": "en-ca"
+			}
+		},
+		"service": {
+			"hostName": "staging-services.${domain}.com",
+			"port": 8085,
+			"microPort": 8998,
+			"host": "staging-services.${domain}.com:8085",
+			"microHost": "staging-services.${domain}.com:8998"
+		},
+		"jdbc": {
+			"mainDb": {
+				"url": "jdbc:sqlserver://dbms-dv148.corp.shop.com:54946;databaseName=MainDB;instance=dev",
+				"driverClass": "com.microsoft.sqlserver.jdbc.SQLServerDriver",
+				"user": "SiteLogin1",
+				"password": "Jabba1_CF0",
+				"maxIdleTime": 60,
+				"maxPoolSize": 10
+			},
+			"abyssDb": {
+				"url": "jdbc:sqlserver://dbms-dv148.corp.shop.com:54946;databaseName=AbyssDB;instance=dev",
+				"driverClass": "com.microsoft.sqlserver.jdbc.SQLServerDriver",
+				"user": "SiteLogin1",
+				"password": "Jabba1_CF0",
+				"maxIdleTime": 60,
+				"maxPoolSize": 10
+			}
+		},
+		"location": "staging"
+	},
+	"live": {
+		"mainHost": "www.${domain}.com",
+		"state": "en-us",
+		"expandHosts": {
+			"cn": {
+				"host": "cn.${domain}.com",
+				"state": "cn"
+			},
+			"au": {
+				"host": "au.${domain}.com",
+				"state": "en-au"
+			},
+			"ca": {
+				"host": "ca.${domain}.com",
+				"state": "en-ca"
+			}
+		},
+		"service": {
+			"hostName": "services.${domain}.com",
+			"port": 8085,
+			"microPort": 8998,
+			"host": "services.${domain}.com:8085",
+			"microHost": "services.${domain}.com:8998"
+		},
+		"jdbc": {
+			"mainDb": {
+				"url": "jdbc:sqlserver://dbms-dv148.corp.shop.com:54946;databaseName=MainDB;instance=dev",
+				"driverClass": "com.microsoft.sqlserver.jdbc.SQLServerDriver",
+				"user": "SiteLogin1",
+				"password": "Jabba1_CF0",
+				"maxIdleTime": 60,
+				"maxPoolSize": 10
+			},
+			"abyssDb": {
+				"url": "jdbc:sqlserver://dbms-dv148.corp.shop.com:54946;databaseName=AbyssDB;instance=dev",
+				"driverClass": "com.microsoft.sqlserver.jdbc.SQLServerDriver",
+				"user": "SiteLogin1",
+				"password": "Jabba1_CF0",
+				"maxIdleTime": 60,
+				"maxPoolSize": 10
+			}
+		},
+		"location": "live"
+	}
+}

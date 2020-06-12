@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+	<head>
+	    <meta charset="UTF-8">
+	    <title>Welcome ThornBird</title>
+	</head>
+	<body>
+		Hi guys,
+			Welcome to my home, ThornBird site.
+			<br/>
+			<a href="#" th:href="@{https://www.baidu.com/}">进入查看</a>
+			<br/>
+			<a href="#" th:href="@{https://www.baidu.com/{id}(id=${id})}">进入查看2</a>
+			<br/>
+			<p th:text="${name}">this is the thymeleaf title</p>
+	</body>
+</html>
