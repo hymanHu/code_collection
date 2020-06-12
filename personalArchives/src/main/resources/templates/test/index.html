@@ -1,0 +1,98 @@
+<section>
+	This is thymeleaf test page.
+	
+	<h3>file upload and download</h3>
+	<a href="/thymeleaf/download/QQ截图20190919140324.png" target="_blank">download file</a>
+	<p>==================================================================</p>
+	<p th:text="${message}"></p>
+	<form action="/thymeleaf/upload" method="post" enctype="multipart/form-data">
+	<input type="file" name="file">
+	<button type="submit">上传</button>
+	</form>
+	<form action="/thymeleaf/bacthFileUpload" method="post" enctype="multipart/form-data">
+	<input type="file" name="file">
+	<input type="file" name="file">
+	<button type="submit">上传</button>
+	</form>
+	<p>==================================================================</p>
+	
+	<h3>th:text</h3>
+	<h1 th:text="${thymeleafTitle}">this is thymeleaf title</h1>
+	<p th:text="${thymeleafTitle}">this is the thymeleaf title</p>
+	<p>==================================================================</p>
+	
+	<h3>th:if,th:unless.</h3>
+	<p th:if="${checked} == true">If true, this will display</p>
+	<p th:if="${currentNumber}&lt;100">print if the currentNumber &lt;100</p>
+	<p th:if="${thymeleafTitle} == null">name is null</p>
+	<p th:unless="${checked} == false">If not false, this will display</p>
+	<p th:unless="${currentNumber} &gt; 100">print if the currentNumber not &gt;100</p>
+	<p>==================================================================</p>
+	
+	<h3>th:attr</h3>
+	checkbox:<input type="text" th:attr="type=${changeType}" th:checked="${checked}"/>
+	checkbox:<input type="text" th:attr="checked=${changeChecked},type=${changeType}"/>
+	<p>==================================================================</p>
+	
+	<h3>url,href</h3>
+	<a th:href="@{http://www.shop.com}" target="_blank">Click it to turn to Shop</a>
+	<a th:href="${baiduUrl}" target="_blank">Click it to turn to Shop beauty</a>
+	<img th:src="@{${shopLogo}}"/>
+	<p>==================================================================</p>
+	
+	<h3>th:object</h3>
+	<div th:object="${country}">
+	    <p th:text="*{countryId}">countryId</p>
+	    <p th:text="*{countryName}">countryName</p>
+	    <p th:text="${country.countryCode}">countryCode</p>
+	</div>
+	<p>==================================================================</p>
+	
+	<h3>th:each, index\size; even/odd:boolean; first/last:boolean</h3>
+	<table>
+	    <th>cityId</th><th>cityName</th><th>countryId</th><th>index</th><th>last</th><th>even</th>
+	    <tr th:each="city,cityStatus : ${cities}">
+	        <td th:text="${city.cityId}"></td>
+	        <td th:text="${city.cityName}"></td>
+	        <td th:text="${city.countryId}"></td>
+	        <td th:text="${cityStatus.index}"></td>
+	        <td th:text="${cityStatus.last}"></td>
+	        <td th:text="${cityStatus.even}"></td>
+	    </tr>
+	</table>
+	<table>
+	    <th>cityId</th><th>cityName</th><th>countryId</th>
+	    <tr th:each="city : ${cities}">
+		    <td th:text="${city.cityId}"></td>
+		    <td th:text="${city.cityName}"></td>
+		    <td th:text="${city.countryId}"></td>
+	    </tr>
+	</table>
+	<select>
+		<option th:each="city,cityStatus : ${cities}" 
+			th:value="${city.cityId}" th:text="${city.cityName}"></option>
+	</select>
+	<p>==================================================================</p>
+	
+	<h3>post form, th:action, th:object, th:field</h3>
+	<form action="#" th:action="@{/processForm}" method="post" th:object="${country}">
+	    Input the firstName: <input th:field="*{countryName}"/>
+	    <p th:if="${#fields.hasErrors('countryName')}" th:errors="*{countryName}">email is null</p>
+	    Input the email: <input th:field="*{countryCode}"/>
+	    Input the age: <input th:field="*{countryId}"/>
+	    <input type="text" readonly>
+	    <button type="submit">Submit Info</button>
+	</form>
+	<p>==================================================================</p>
+	
+	<h3> built-in objects : calendar,dates,numbers,lists,arrays ...use #</h3>
+	<p th:text="${#calendars.format(today,'dd MMMM yyyy')}"></p>
+	<p th:text="${#dates.format(today)}"></p>
+	<p th:text="${#httpServletRequest.getScheme()}">11111</p>
+	<p th:text="${#httpServletRequest.getServerName()}">11111</p>
+	<p th:text="${#httpServletRequest.getServerPort()}">11111</p>
+	<p th:text="${#httpServletRequest.getContextPath()}">11111</p>
+	<p th:text="${#strings.abbreviate(thymeleafTitle,200)}"></p>
+	<p>==================================================================</p>
+    
+</section>

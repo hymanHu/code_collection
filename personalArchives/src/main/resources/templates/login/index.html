@@ -1,0 +1,9 @@
+<section>
+	This is login page.
+	<p th:text="${errorMessage}"></p>
+	<form action="/doLogin" method="post" th:object="${account}">
+		Input the account name: <input th:field="*{accountName}"/>
+	    Input the password: <input type="password" th:field="*{password}"/>
+	    <button type="submit">Submit</button>
+	</form>
+</section>

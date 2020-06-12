@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+		<TITLE>THORNBIRD.COM</TITLE>
+		<META name="description" content="THORNBIRD.COM"/>
+		
+		<script th:src="@{http://code.jquery.com/jquery-latest.js}" type="text/javascript"></script>
+	    <script th:src="${'/min/thornBird.min.js'}" type="text/javascript"></script>
+	    <link th:href="${'/min/thornBird.min.css'}" rel="stylesheet" />
+	</head>
+	<body>
+		This is 500 page, please contact the administrator.
+		<p th:text="${errorInfo}">this is the error info.</p>
+	</body>
+</html>
