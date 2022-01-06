@@ -13,7 +13,7 @@
 	
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<cxf.version>2.7.8</cxf.version>
+		<cxf.version>3.3.11</cxf.version>
 		<!-- <weather.wsdl.file>http://webservice.webxml.com.cn/WebServices/WeatherWebService.asmx?wsdl</weather.wsdl.file> -->
 		<weather.wsdl.file>${basedir}/src/main/resources/wsdl/WeatherWebservice.xml</weather.wsdl.file>
 		<!-- <phone.wsdl.file>http://webservice.webxml.com.cn/WebServices/MobileCodeWS.asmx?wsdl</phone.wsdl.file> -->
