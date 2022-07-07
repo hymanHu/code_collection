@@ -8,7 +8,7 @@
 	
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<org.springframework.version>3.0.5.RELEASE</org.springframework.version>
+		<org.springframework.version>3.2.5.RELEASE</org.springframework.version>
 		<javax.servlet.version>2.5</javax.servlet.version>
 		<org.slf4j.version>1.6.1</org.slf4j.version>
 		<com.sun.jersey.version>1.5</com.sun.jersey.version>
